@@ -352,6 +352,10 @@ class KernelUtils {
 	h2(string) {
 		this.kernel.area_render.innerHTML += "<h2>" + string + "</h2>";
 	}
+
+	h3(string) {
+		this.kernel.area_render.innerHTML += "<h3>" + string + "</h3>";
+	}
 }
 
 let context = new Context();
