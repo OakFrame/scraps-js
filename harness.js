@@ -18,6 +18,12 @@ class Context {
 			self.getState().setPointer(parseInt(this.value));
 			self.executeStack();
 		};
+		this.element.onmousemove = function () {
+			if (parseInt(this.value) !== self.getState().getPointer()) {
+				self.getState().setPointer(parseInt(this.value));
+				self.executeStack();
+			}
+		};
 		let last = Date.now();
 	}
 
@@ -50,28 +56,69 @@ class Context {
 class Sandbox {
 	input;
 	element;
+	output_element;
 
 	constructor(code) {
 		let sandbox = this;
 		this.input = code;
 		this.element = document.createElement('textarea');
+		this.element.className = "code-input-";
 		this.element.value = code;
 		this.element.style.width = "100%";
 		this.element.rows = 8;
 
+		this.output_element = document.createElement('pre');
+		this.output_element.className = "code-output-";
+		this.output_code = document.createElement('code');
+		this.output_code.className = "language-javascript";
+		this.output_element.appendChild(this.output_code);
+
+		this.element.onscroll = function () {
+			sandbox.output_element.scrollTop = this.scrollTop;
+			sandbox.output_element.scrollLeft = this.scrollLeft;
+		};
+
+		this.element.onkeydown = function (key) {
+			var input = this,
+				selStartPos = input.selectionStart,
+				inputVal = input.value;
+
+			if (key.keyCode === 9) {
+				input.value = inputVal.substring(0, selStartPos) + "    " + inputVal.substring(selStartPos, input.value.length);
+				input.selectionStart = selStartPos + 4;
+				input.selectionEnd = selStartPos + 4;
+				key.preventDefault();
+			}
+
+			window.setTimeout(function () {
+				sandbox.renderCodeHighlighting();
+			}, 1)
+
+		};
 		this.element.onkeyup = function () {
-			sandbox.input = this.value;
-			console.log('UPDATED CODE', sandbox.input);
 			context.executeStack();
 		};
 	}
 
+	renderCodeHighlighting() {
+		this.element.style.height = "5px";
+		this.element.style.height = (this.element.scrollHeight) + "px";
+		this.input = this.element.value;
+		let v = this.input.replace(/&/g, "&amp;").replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;") + "\n";
+		this.output_code.innerHTML = v;
+		Prism.highlightAll();
+	}
+
 	getElement() {
-		return this.element;
+		let el = document.createElement('div');
+		el.className = 'code';
+		el.appendChild(this.element);
+		el.appendChild(this.output_element);
+		return el;
 	}
 
 	getCompiled() {
-
 		let build_variables = `
 		function makeIdentifiableProperty(i){
 			return typeof i + (!!i?i.toString():"unknown");
@@ -79,7 +126,10 @@ class Sandbox {
 		let utils = new KernelUtils(kernel);
 		let p = utils.p.bind(utils);
 		let h1 = utils.h1.bind(utils);
-		let h2 = utils.h2.bind(utils);`;
+		let h2 = utils.h2.bind(utils);
+		let print = kernel.print.bind(kernel)
+		`;
+
 
 		return `let initial = [];
 for (var prop in window) {
@@ -89,43 +139,40 @@ for (var prop in window) {
 	}
 }
 
-for (var prop in context.getState().getProps()){
+for (var prop in context.getState().getDenseProps()){
     let ind = initial.indexOf(prop);
     if (ind !== -1){
         initial.splice(ind,0);
-        this[prop] = context.getState().getProps()[prop];
+        this[prop] = context.getState().getDenseProps()[prop];
     }
 }
 
-console.log('incoming context',context.getState().getProps());
+console.log('incoming dense context',context.getState().getDenseProps());
+
+function profile(){
+	for (var prop in window) {
+		if (prop.indexOf("_oka_") !== -1){
+	
+		}else{
+			if (typeof window[prop] !== "function" && typeof window[prop] !== "object"){
+				if (initial.indexOf(prop) == -1){   
+				console.log('prop', prop);
+					context.getState().mutate({[prop]:window[prop]});
+				}else{
+					if (makeIdentifiableProperty(window[prop]) !== window["_oka_"+prop]){
+						context.getState().mutate({[prop]:window[prop]});
+					}
+				}
+			}
+		}
+	}
+}
 
 ${build_variables}
 
-${this.input};
-let output = {};
-for (var prop in window) {
+${this.input.replace( /;/g, ";profile();")};
 
-	if (prop.indexOf("_oka_") !== -1){
-	//	delete window[prop];
-	}else{
-	
-		if (typeof window[prop] !== "function" && typeof window[prop] !== "object"){
-
-		if (initial.indexOf(prop) == -1){
-		//	console.log('new props',prop, window[prop]);
-			context.getState().mutate({[prop]:window[prop]});
-		}else{
-		//	console.log(prop,makeIdentifiableProperty(window[prop]), window["_oka_"+prop]);
-			if (makeIdentifiableProperty(window[prop]) !== window["_oka_"+prop]){
-			//console.log('existing prop, but different:',prop, window[prop],window["_oka_"+prop]);
-			context.getState().mutate({[prop]:window[prop]});
-			}
-		}
-		
-		}
-	}
-
-}`;
+`;
 	}
 
 	getLambda() {
@@ -155,6 +202,11 @@ class Kernel {
 		this.utils = new KernelUtils(this);
 	}
 
+	print(element) {
+		this.area_render.appendChild(element);
+	}
+
+
 	load(element) {
 
 		this.sandbox = new Sandbox(element.innerHTML);
@@ -162,7 +214,7 @@ class Kernel {
 
 		let control_bar = document.createElement('div');
 		control_bar.className = 'control_bar';
-		control_bar.innerText = 'this is the control bar';
+		control_bar.innerText = '';
 		this.area_control.appendChild(control_bar);
 
 		this.area_working.appendChild(this.sandbox.getElement());
@@ -171,6 +223,8 @@ class Kernel {
 		element.appendChild(this.area_working);
 		element.appendChild(this.area_control);
 		element.appendChild(this.area_console);
+
+		this.sandbox.renderCodeHighlighting();
 	}
 
 	getSandbox() {
@@ -189,7 +243,6 @@ class Kernel {
 	evaluate(flush) {
 
 		let self = this;
-
 		if (flush) {
 			window.clearTimeout(this.debounce);
 			this.debounce = null;
@@ -199,19 +252,19 @@ class Kernel {
 			self.debounce = window.setTimeout(function () {
 				self.evaluate(true);
 				console.log("debounce called");
-			}, 400);
+			}, 10);
 
 			return
 		}
 
-		console.log('EVALUATING');
-
 		//this.area_console.innerHTML = "";
-		this.area_render.innerHTML = "";
+
 		//this.area_console.className = "";
 		try {
 			let fn = this.getSandbox().getLambda();
 			try {
+				this.area_console.innerText = '';
+				this.area_render.innerHTML = "";
 				this.artifacts = fn(this);
 				if (this.artifacts !== undefined && JSON.stringify(this.artifacts) !== "{}" && JSON.stringify(this.artifacts) !== "undefined") {
 					if (typeof this.artifacts === 'string' || typeof this.artifacts === 'number') {
@@ -221,21 +274,26 @@ class Kernel {
 						//this.area_console.innerHTML = "" + this.artifacts;
 					} else {
 						if (self.onlyIfChanges(this.area_console.innerHTML, JSON.stringify(this.artifacts))) {
-							this.area_console.innerHTML = JSON.stringify(this.artifacts);
+							this.area_console.innerHTML = "";
+							jsonView.format(JSON.stringify(this.artifacts), this.area_console);
+
 						}
-						//self.onlyIfChanges(this.area_console.innerHTML, JSON.stringify(this.artifacts));
-						//window['jsonView'].format(JSON.stringify(out), self.console_area_element);
-						//	this.area_console.innerHTML = "" + JSON.stringify(this.artifacts);
 					}
 				}
 			} catch (e) {
 				//	this.area_console.className = "error";
 				//	this.area_console.innerText = "Runtime Error: " + JSON.stringify(e.message);
+				if (self.onlyIfChanges(this.area_console.innerHTML, "Runtime Error: " + JSON.stringify(e.message))) {
+					this.area_console.innerHTML = "Runtime Error: " + JSON.stringify(e.message);
+				}
 			}
 
 		} catch (e) {
 			//this.area_console.className = "error";
 			//this.area_console.innerText = "Compilation Error: " + JSON.stringify(e.message);
+			if (self.onlyIfChanges(this.area_console.innerHTML, "Compilation Error: " + JSON.stringify(e.message))) {
+				this.area_console.innerHTML = "Compilation Error: " + JSON.stringify(e.message);
+			}
 		}
 	}
 }
@@ -277,6 +335,16 @@ class State {
 		return this.props[this.prop_pointer];
 	}
 
+	getDenseProps() {
+		let x = {};
+		for (var i = 0; i < this.prop_pointer; i++) {
+			for (var p in this.props[i]) {
+				x[p] = this.props[i][p];
+			}
+		}
+		return x;
+	}
+
 	mutate(x) {
 		let updated = false;
 		for (let p in x) {
@@ -295,12 +363,11 @@ class State {
 		}
 
 		let current_props = JSON.parse(JSON.stringify(this.getProps()));
-
-		//if (this.prop_pointer === this.getPropsLength()-1) {
-		//this.props.push();
-		this.props.splice(this.prop_pointer, 0, Object.assign(current_props, x));
-		this.prop_pointer++;
-		//}
+		if (this.prop_pointer === this.getPropsLength() - 1) {
+			//this.props.push();
+			this.props.splice(this.prop_pointer, 0, Object.assign(current_props, x));
+			this.prop_pointer++;
+		}
 		return this;
 	}
 
@@ -341,20 +408,27 @@ class KernelUtils {
 	}
 
 	p(string) {
-		this.kernel.area_render.innerHTML += "<p>" + string + "</p>";
+		let el = document.createElement('p');
+		el.innerHTML = string;
+		return el;
 	}
 
 	h1(string) {
-		console.log(this, this.kernel, 'H1');
-		this.kernel.area_render.innerHTML += "<h1>" + string + "</h1>";
+		let el = document.createElement('h1');
+		el.innerHTML = string;
+		return el;
 	}
 
 	h2(string) {
-		this.kernel.area_render.innerHTML += "<h2>" + string + "</h2>";
+		let el = document.createElement('h2');
+		el.innerHTML = string;
+		return el;
 	}
 
 	h3(string) {
-		this.kernel.area_render.innerHTML += "<h3>" + string + "</h3>";
+		let el = document.createElement('h3');
+		el.innerHTML = string;
+		return el;
 	}
 }
 
