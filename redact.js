@@ -1,4 +1,4 @@
-class Context {
+class Redact {
 	kernels;
 	modules;
 	state;
@@ -432,9 +432,9 @@ class KernelUtils {
 	}
 }
 
-let context = new Context();
+let context = new Redact();
 document.body.appendChild(context.getElement());
-let elements2 = document.getElementsByClassName('oakframe');
+let elements2 = document.getElementsByClassName('redact-js');
 for (let i = 0; i < elements2.length; i++) {
 	let el = elements2[i];
 	let kernel = new Kernel(context);
