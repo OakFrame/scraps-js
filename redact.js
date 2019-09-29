@@ -304,7 +304,7 @@ var KernelUtils = /** @class */ (function () {
     return KernelUtils;
 }());
 var context = new Redact();
-document.body.appendChild(context.getElement());
+//document.body.appendChild(context.getElement());
 var elements2 = document.getElementsByClassName('redact-js');
 for (var i = 0; i < elements2.length; i++) {
     var el = elements2[i];
