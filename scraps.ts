@@ -1,4 +1,4 @@
-class Redact {
+class Scraps {
 	kernels;
 	modules;
 	state;
@@ -244,7 +244,6 @@ class Kernel {
 		return (old !== n);
 	}
 
-
 	evaluate(flush) {
 
 		let self = this;
@@ -274,53 +273,24 @@ class Kernel {
 						if (self.onlyIfChanges(this.area_console.innerHTML, this.artifacts)) {
 							this.area_console.innerHTML = this.artifacts;
 						}
-						//this.area_console.innerHTML = "" + this.artifacts;
 					} else {
 						if (self.onlyIfChanges(this.area_console.innerHTML, JSON.stringify(this.artifacts))) {
 							this.area_console.innerHTML = "";
 							jsonView.format(JSON.stringify(this.artifacts), this.area_console);
-
 						}
 					}
 				}
 			} catch (e) {
-				//	this.area_console.className = "error";
-				//	this.area_console.innerText = "Runtime Error: " + JSON.stringify(e.message);
 				if (self.onlyIfChanges(this.area_console.innerHTML, "Runtime Error: " + JSON.stringify(e.message))) {
 					this.area_console.innerHTML = "Runtime Error: " + JSON.stringify(e.message);
 				}
 			}
 
 		} catch (e) {
-			//this.area_console.className = "error";
-			//this.area_console.innerText = "Compilation Error: " + JSON.stringify(e.message);
 			if (self.onlyIfChanges(this.area_console.innerHTML, "Compilation Error: " + JSON.stringify(e.message))) {
 				this.area_console.innerHTML = "Compilation Error: " + JSON.stringify(e.message);
 			}
 		}
-	}
-}
-
-class Module {
-
-	constructor() {
-
-	}
-
-	load() {
-
-	}
-
-	update() {
-
-	}
-
-	render() {
-
-	}
-
-	unload() {
-
 	}
 }
 
@@ -438,8 +408,7 @@ class KernelUtils {
 	}
 }
 
-let context = new Redact();
-//document.body.appendChild(context.getElement());
+let context = new Scraps();
 let elements2 = document.getElementsByClassName('redact-js');
 for (let i = 0; i < elements2.length; i++) {
 	let el = elements2[i];

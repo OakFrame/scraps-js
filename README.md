@@ -1,4 +1,4 @@
-Run `redact.html` in your browser, type some code, slide the slider.
+Run `scraps.html` in your browser, type some code, slide the slider.
 
 
 License: MIT \

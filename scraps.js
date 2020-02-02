@@ -1,5 +1,5 @@
-var Redact = /** @class */ (function () {
-    function Redact() {
+var Scraps = /** @class */ (function () {
+    function Scraps() {
         var self = this;
         this.kernels = [];
         this.modules = [];
@@ -21,11 +21,11 @@ var Redact = /** @class */ (function () {
         };
         var last = Date.now();
     }
-    Redact.prototype.register = function (kernel) {
+    Scraps.prototype.register = function (kernel) {
         this.kernels.push(kernel);
         return this;
     };
-    Redact.prototype.executeStack = function () {
+    Scraps.prototype.executeStack = function () {
         this.kernels.forEach(function (k) {
             k.evaluate();
         });
@@ -34,13 +34,13 @@ var Redact = /** @class */ (function () {
         this.element.max = (this.getState().getPropsLength() - 1) + "";
         this.element.value = this.getState().getPointer();
     };
-    Redact.prototype.getState = function () {
+    Scraps.prototype.getState = function () {
         return this.state;
     };
-    Redact.prototype.getElement = function () {
+    Scraps.prototype.getElement = function () {
         return this.element;
     };
-    return Redact;
+    return Scraps;
 }());
 var Sandbox = /** @class */ (function () {
     function Sandbox(code) {
@@ -303,7 +303,7 @@ var KernelUtils = /** @class */ (function () {
     };
     return KernelUtils;
 }());
-var context = new Redact();
+var context = new Scraps();
 //document.body.appendChild(context.getElement());
 var elements2 = document.getElementsByClassName('redact-js');
 for (var i = 0; i < elements2.length; i++) {
