@@ -1,48 +1,21 @@
-var Scraps = /** @class */ (function () {
+var Scraps = (function () {
     function Scraps() {
-        var self = this;
         this.kernels = [];
-        this.modules = [];
-        this.state = new State();
-        this.element = document.createElement('input');
-        this.element.type = "range";
-        this.element.min = "0";
-        this.element.max = "0";
-        this.element.value = "0";
-        this.element.onchange = function () {
-            self.getState().setPointer(parseInt(this.value));
-            self.executeStack();
-        };
-        this.element.onmousemove = function () {
-            if (parseInt(this.value) !== self.getState().getPointer()) {
-                self.getState().setPointer(parseInt(this.value));
-                self.executeStack();
-            }
-        };
-        var last = Date.now();
     }
     Scraps.prototype.register = function (kernel) {
         this.kernels.push(kernel);
         return this;
     };
-    Scraps.prototype.executeStack = function () {
+    Scraps.prototype.executeStack = function (flush) {
+        console.log("EXECUTE STACK");
         this.kernels.forEach(function (k) {
-            k.evaluate();
+            console.log("kernel");
+            k.evaluate(flush);
         });
-        console.log(this.getState().props, this.getState().getProps());
-        this.element.min = "0";
-        this.element.max = (this.getState().getPropsLength() - 1) + "";
-        this.element.value = this.getState().getPointer();
-    };
-    Scraps.prototype.getState = function () {
-        return this.state;
-    };
-    Scraps.prototype.getElement = function () {
-        return this.element;
     };
     return Scraps;
 }());
-var Sandbox = /** @class */ (function () {
+var Sandbox = (function () {
     function Sandbox(code) {
         var sandbox = this;
         this.input = code;
@@ -58,11 +31,11 @@ var Sandbox = /** @class */ (function () {
         this.output_code.className = "language-javascript";
         this.output_element.appendChild(this.output_code);
         this.element.onscroll = function () {
-            sandbox.output_element.scrollTop = this.scrollTop;
-            sandbox.output_element.scrollLeft = this.scrollLeft;
+            sandbox.output_element.scrollTop = sandbox.element.scrollTop;
+            sandbox.output_element.scrollLeft = sandbox.element.scrollLeft;
         };
         this.element.onkeydown = function (key) {
-            var input = this, selStartPos = input.selectionStart, inputVal = input.value;
+            var input = sandbox.element, selStartPos = input.selectionStart, inputVal = input.value;
             if (key.keyCode === 9) {
                 input.value = inputVal.substring(0, selStartPos) + "    " + inputVal.substring(selStartPos, input.value.length);
                 input.selectionStart = selStartPos + 4;
@@ -74,7 +47,7 @@ var Sandbox = /** @class */ (function () {
             }, 1);
         };
         this.element.onkeyup = function () {
-            context.executeStack();
+            context.executeStack(false);
             window.setTimeout(function () {
                 sandbox.renderCodeHighlighting();
             }, 1);
@@ -87,7 +60,7 @@ var Sandbox = /** @class */ (function () {
         var v = this.input.replace(/&/g, "&amp;").replace(/</g, "&lt;")
             .replace(/>/g, "&gt;") + "\n";
         this.output_code.innerHTML = v;
-        Prism.highlightAll();
+        window['Prism'].highlightAll();
     };
     Sandbox.prototype.getElement = function () {
         var el = document.createElement('div');
@@ -98,7 +71,7 @@ var Sandbox = /** @class */ (function () {
     };
     Sandbox.prototype.getCompiled = function () {
         var build_variables = "\n\t\tfunction makeIdentifiableProperty(i){\n\t\t\treturn typeof i + (!!i?i.toString():\"unknown\");\n\t\t}\n\t\tlet utils = new KernelUtils(kernel);\n\t\tlet p = utils.p.bind(utils);\n\t\tlet h1 = utils.h1.bind(utils);\n\t\tlet h2 = utils.h2.bind(utils);\n\t\tlet print = kernel.print.bind(kernel)\n\t\t";
-        return "let initial = [];\nfor (var prop in window) {\n\tinitial.push(prop);\n\tif (typeof window[prop] !== \"function\" && typeof window[prop] !== \"object\"){\n\twindow[\"_oka_\"+prop] = makeIdentifiableProperty(window[prop]);\n\t}\n}\n\nfor (var prop in context.getState().getDenseProps()){\n    let ind = initial.indexOf(prop);\n    if (ind !== -1){\n        initial.splice(ind,0);\n        this[prop] = context.getState().getDenseProps()[prop];\n    }\n}\n\nconsole.log('incoming dense context',context.getState().getDenseProps());\n\nfunction profile(){\n\tfor (var prop in window) {\n\t\tif (prop.indexOf(\"_oka_\") !== -1){\n\t\n\t\t}else{\n\t\t\tif (typeof window[prop] !== \"function\" && typeof window[prop] !== \"object\"){\n\t\t\t\tif (initial.indexOf(prop) == -1){   \n\t\t\t\tconsole.log('prop', prop);\n\t\t\t\t\tcontext.getState().mutate({[prop]:window[prop]});\n\t\t\t\t}else{\n\t\t\t\t\tif (makeIdentifiableProperty(window[prop]) !== window[\"_oka_\"+prop]){\n\t\t\t\t\t\tcontext.getState().mutate({[prop]:window[prop]});\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n}\n\n" + build_variables + "\n\n" + this.input.replace(/;/g, ";") + ";\n\n";
+        return build_variables + " " + this.input.replace(/;/g, ";") + ";";
     };
     Sandbox.prototype.getLambda = function () {
         var args = "kernel";
@@ -106,7 +79,7 @@ var Sandbox = /** @class */ (function () {
     };
     return Sandbox;
 }());
-var Kernel = /** @class */ (function () {
+var Kernel = (function () {
     function Kernel(context) {
         this.context = context.register(this);
         this.area_control = document.createElement('div');
@@ -135,9 +108,6 @@ var Kernel = /** @class */ (function () {
     Kernel.prototype.getSandbox = function () {
         return this.sandbox;
     };
-    Kernel.prototype.getArtifacts = function () {
-        return this.artifacts;
-    };
     Kernel.prototype.onlyIfChanges = function (old, n) {
         return (old !== n);
     };
@@ -151,7 +121,6 @@ var Kernel = /** @class */ (function () {
             window.clearTimeout(this.debounce);
             self.debounce = window.setTimeout(function () {
                 self.evaluate(true);
-                console.log("debounce called");
             }, 10);
             return;
         }
@@ -164,29 +133,24 @@ var Kernel = /** @class */ (function () {
                 if (this.artifacts !== undefined && JSON.stringify(this.artifacts) !== "{}" && JSON.stringify(this.artifacts) !== "undefined") {
                     if (typeof this.artifacts === 'string' || typeof this.artifacts === 'number') {
                         if (self.onlyIfChanges(this.area_console.innerHTML, this.artifacts)) {
-                            this.area_console.innerHTML = this.artifacts;
+                            this.area_console.innerHTML = this.artifacts.toString();
                         }
-                        //this.area_console.innerHTML = "" + this.artifacts;
                     }
                     else {
                         if (self.onlyIfChanges(this.area_console.innerHTML, JSON.stringify(this.artifacts))) {
                             this.area_console.innerHTML = "";
-                            jsonView.format(JSON.stringify(this.artifacts), this.area_console);
+                            window['jsonView'].format(JSON.stringify(this.artifacts), this.area_console);
                         }
                     }
                 }
             }
             catch (e) {
-                //	this.area_console.className = "error";
-                //	this.area_console.innerText = "Runtime Error: " + JSON.stringify(e.message);
                 if (self.onlyIfChanges(this.area_console.innerHTML, "Runtime Error: " + JSON.stringify(e.message))) {
                     this.area_console.innerHTML = "Runtime Error: " + JSON.stringify(e.message);
                 }
             }
         }
         catch (e) {
-            //this.area_console.className = "error";
-            //this.area_console.innerText = "Compilation Error: " + JSON.stringify(e.message);
             if (self.onlyIfChanges(this.area_console.innerHTML, "Compilation Error: " + JSON.stringify(e.message))) {
                 this.area_console.innerHTML = "Compilation Error: " + JSON.stringify(e.message);
             }
@@ -194,91 +158,8 @@ var Kernel = /** @class */ (function () {
     };
     return Kernel;
 }());
-var Module = /** @class */ (function () {
-    function Module() {
-    }
-    Module.prototype.load = function () {
-    };
-    Module.prototype.update = function () {
-    };
-    Module.prototype.render = function () {
-    };
-    Module.prototype.unload = function () {
-    };
-    return Module;
-}());
-var State = /** @class */ (function () {
-    function State() {
-        this.props = [{}];
-        this.prop_pointer = 0;
-        this.handlers = {};
-    }
-    State.prototype.getProps = function () {
-        return this.props[this.prop_pointer];
-    };
-    State.prototype.getDenseProps = function () {
-        var x = {};
-        for (var i = 0; i < this.prop_pointer; i++) {
-            for (var p in this.props[i]) {
-                x[p] = this.props[i][p];
-            }
-        }
-        return x;
-    };
-    State.prototype.mutate = function (x) {
-        var updated = false;
-        var _loop_1 = function (p) {
-            if (x[p] !== this_1.props[p]) {
-                updated = true;
-                if (this_1.handlers[p]) {
-                    this_1.handlers[p].forEach(function (handler) {
-                        handler(x[p]);
-                    });
-                }
-            }
-        };
-        var this_1 = this;
-        for (var p in x) {
-            _loop_1(p);
-        }
-        if (!updated) {
-            return;
-        }
-        var current_props = JSON.parse(JSON.stringify(this.getProps()));
-        if (this.prop_pointer === this.getPropsLength() - 1) {
-            //this.props.push();
-            this.props.splice(this.prop_pointer, 0, Object.assign(current_props, x));
-            this.prop_pointer++;
-        }
-        return this;
-    };
-    State.prototype.onChange = function (prop, handler) {
-        if (!this.handlers[prop]) {
-            this.handlers[prop] = [];
-        }
-        this.handlers[prop].push(handler);
-    };
-    State.prototype.getPropsLength = function () {
-        return this.props.length;
-    };
-    State.prototype.getPointer = function () {
-        return this.prop_pointer;
-    };
-    State.prototype.setPointer = function (p) {
-        this.prop_pointer = Math.min(p, this.props.length);
-    };
-    return State;
-}());
-var Instance = /** @class */ (function () {
-    function Instance() {
-    }
-    return Instance;
-}());
-var KernelUtils = /** @class */ (function () {
+var KernelUtils = (function () {
     function KernelUtils(kernel) {
-        if (!kernel) {
-            //kernel.logError();
-        }
         this.kernel = kernel;
     }
     KernelUtils.prototype.p = function (string) {
@@ -304,11 +185,11 @@ var KernelUtils = /** @class */ (function () {
     return KernelUtils;
 }());
 var context = new Scraps();
-//document.body.appendChild(context.getElement());
-var elements2 = document.getElementsByClassName('redact-js');
-for (var i = 0; i < elements2.length; i++) {
-    var el = elements2[i];
+var elements = document.getElementsByClassName('redact-js');
+for (var i = 0; i < elements.length; i++) {
+    var el = elements[i];
     var kernel = new Kernel(context);
     kernel.load(el);
 }
-context.executeStack();
+context.executeStack(true);
+//# sourceMappingURL=scraps.js.map

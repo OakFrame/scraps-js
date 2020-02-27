@@ -1,5 +1,6 @@
-Run `scraps.html` in your browser, type some code, slide the slider.
+Run `scraps.html` in your browser.
 
+//TODO
 
 License: MIT \
 With love, from Dallas
