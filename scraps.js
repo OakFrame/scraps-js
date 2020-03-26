@@ -33,6 +33,7 @@ var Sandbox = (function () {
         this.element.onscroll = function () {
             sandbox.output_element.scrollTop = sandbox.element.scrollTop;
             sandbox.output_element.scrollLeft = sandbox.element.scrollLeft;
+            console.log("scrolling", sandbox.element, this);
         };
         this.element.onkeydown = function (key) {
             var input = sandbox.element, selStartPos = input.selectionStart, inputVal = input.value;
@@ -56,6 +57,7 @@ var Sandbox = (function () {
     Sandbox.prototype.renderCodeHighlighting = function () {
         this.element.style.height = "5px";
         this.element.style.height = (this.element.scrollHeight) + "px";
+        this.output_code.style.height = (this.element.scrollHeight) + "px";
         this.input = this.element.value;
         var v = this.input.replace(/&/g, "&amp;").replace(/</g, "&lt;")
             .replace(/>/g, "&gt;") + "\n";

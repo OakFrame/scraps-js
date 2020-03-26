@@ -45,6 +45,7 @@ class Sandbox {
 		this.element.onscroll = function () {
 			sandbox.output_element.scrollTop = sandbox.element.scrollTop;
 			sandbox.output_element.scrollLeft = sandbox.element.scrollLeft;
+			console.log("scrolling", sandbox.element, this);
 		};
 
 		this.element.onkeydown = function (key) {
@@ -75,10 +76,12 @@ class Sandbox {
 	renderCodeHighlighting() {
 		this.element.style.height = "5px";
 		this.element.style.height = (this.element.scrollHeight) + "px";
+		this.output_code.style.height = (this.element.scrollHeight) + "px";
 		this.input = this.element.value;
 		let v = this.input.replace(/&/g, "&amp;").replace(/</g, "&lt;")
 			.replace(/>/g, "&gt;") + "\n";
 		this.output_code.innerHTML = v;
+		// @ts-ignore
 		window['Prism'].highlightAll();
 	}
 
@@ -197,6 +200,7 @@ class Kernel {
 					} else {
 						if (self.onlyIfChanges(this.area_console.innerHTML, JSON.stringify(this.artifacts))) {
 							this.area_console.innerHTML = "";
+							// @ts-ignore
 							window['jsonView'].format(JSON.stringify(this.artifacts), this.area_console);
 						}
 					}

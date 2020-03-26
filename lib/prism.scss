@@ -13,7 +13,6 @@ https://prismjs.com/download.html#themes=prism&languages=markup+css+clike+javasc
 .code {
   position: relative;
 
-
 [class*="code-input"], [class*="code-output"] {
 	font-size:0.8em;
 	width: 100%;
@@ -31,7 +30,7 @@ https://prismjs.com/download.html#themes=prism&languages=markup+css+clike+javasc
 	margin: 0;
 	color: #999;
 	resize: none;
-	margin-bottom: 20px;
+	//margin-bottom: 20px;
 	background-color:#fafafd;
 }
 
@@ -41,9 +40,9 @@ https://prismjs.com/download.html#themes=prism&languages=markup+css+clike+javasc
 	left: 0;
 	pointer-events: none;
 	margin: 0;
-	overflow-y: auto;
 	padding: 0;
   	height: 100%;
+
 
 code {
 	position: absolute;
@@ -52,6 +51,7 @@ code {
 	margin: 0;
 	padding: 1rem;
 	display: block;
+	overflow: hidden;
 }
 }
 
@@ -75,6 +75,7 @@ pre[class*="language-"] {
 	-moz-hyphens: none;
 	-ms-hyphens: none;
 	hyphens: none;
+	overflow:scroll;
 }
 
 .token.comment,
