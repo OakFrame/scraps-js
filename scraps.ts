@@ -11,9 +11,7 @@ class Scraps {
 	}
 
 	executeStack(flush:boolean) {
-		console.log("EXECUTE STACK");
 		this.kernels.forEach(function (k) {
-			console.log("kernel");
 			k.evaluate(flush);
 		});
 	}
@@ -45,7 +43,6 @@ class Sandbox {
 		this.element.onscroll = function () {
 			sandbox.output_element.scrollTop = sandbox.element.scrollTop;
 			sandbox.output_element.scrollLeft = sandbox.element.scrollLeft;
-			console.log("scrolling", sandbox.element, this);
 		};
 
 		this.element.onkeydown = function (key) {

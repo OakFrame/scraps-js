@@ -7,9 +7,7 @@ var Scraps = (function () {
         return this;
     };
     Scraps.prototype.executeStack = function (flush) {
-        console.log("EXECUTE STACK");
         this.kernels.forEach(function (k) {
-            console.log("kernel");
             k.evaluate(flush);
         });
     };
@@ -33,7 +31,6 @@ var Sandbox = (function () {
         this.element.onscroll = function () {
             sandbox.output_element.scrollTop = sandbox.element.scrollTop;
             sandbox.output_element.scrollLeft = sandbox.element.scrollLeft;
-            console.log("scrolling", sandbox.element, this);
         };
         this.element.onkeydown = function (key) {
             var input = sandbox.element, selStartPos = input.selectionStart, inputVal = input.value;
