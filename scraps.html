@@ -1,7 +1,10 @@
 <html>
 
 <head>
-	<link href="https://fonts.googleapis.com/css?family=DM+Sans:400,400i,500,500i,700,700i&amp;display=swap" rel="stylesheet" />
+	<link href="https://fonts.googleapis.com/css?family=DM+Sans:400,400i,500,500i,700,700i&display=swap" rel="stylesheet" />
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" user-scalable="no">
 <style>
 	*{
 		-webkit-box-sizing: border-box;
@@ -12,30 +15,34 @@
 	}
 
 	textarea {
-		font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+		font-family: "Calling Code", Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
 	}
+
 </style>
 
-	<link rel="stylesheet" href="lib/jsonview.css" type="text/css" />
-	<link rel="stylesheet" href="lib/prism.css" type="text/css" />
+	<link rel="stylesheet" href="dist/scraps.css" type="text/css" />
 </head>
 
 <body>
 
 </body>
 
-<div class="redact-js">project_name = `Scraps-JS`;
-link = `<a href='https://oakframe.org'>OakFrame</a>`;
-print( h1( `Welcome to your first ${project_name} Project` ) );
-print( p( `As you can see, much of this website is controlled by code, written in this area below called a Leaf.<br/>It's just javascript, and a few little features we've added as a state management system.` ) );
-return {a:true, b:false};</div>
-<div class="redact-js">print( p( `We are able to make variable definitions in one leaf, and we should be able to pick it up later in any other leaf, in both directions.<br/>Only variables not prefixed with let, var, or const are kept in State, so your print function calls and strings will be unaffected.` ) );
-print( h2( `Copyright ${link} © ${new Date().getYear()+1900} — ${project_name}` ) );
-username = `John Doe`;</div>
+<div style="max-width:920pt;margin: 0 auto;">
 
-<script src="lib/jsonview.js"></script>
-<script src="lib/prism.js"></script>
-<script src="scraps.js"></script>
+<div class="scraps-js">project_name = `ScrapsContext-JS`;
+order = 1;</div>
+
+	<div class="scraps-js">link = `<a href='https://oakframe.org'>OakFrame</a>`;
+print( h1( `Welcome to your first ${project_name} Project` ) );
+print( p( `As you can see, much of this website is controlled by code, written in this area below called a Scrap.<br/>It's just javascript, and a few little features we've added as a state management system.` ) );
+return {order};</div>
+
+<div class="scraps-js">print( p( `We are able to make variable definitions in one leaf, and we should be able to pick it up later in any other leaf, in both directions.<br/>Only variables not prefixed with let, var, or const are kept in State, so your print function calls and strings will be unaffected.` ) );
+print( h2( `Copyright ${link} ${new Date().getYear()+1900} - ${project_name}` ) );
+username = `John Doe`;</div>
+</div>
+
+<script src="dist/scraps.js"></script>
 
 
 </html>

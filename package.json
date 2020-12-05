@@ -1,0 +1,23 @@
+{
+  "name": "scraps-js",
+  "version": "0.0.1",
+  "description": "Interactive Code Editing in Browser",
+  "main": "scraps.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "package": "tsc && mkdir -p dist && cat lib/jsonview.js lib/prism.js scraps.js > dist/scraps.js && cat lib/scraps.css lib/jsonview.css lib/prism.css > dist/scraps.css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arkamedus/scraps-js.git"
+  },
+  "author": "Gordon Goodrum",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/arkamedus/scraps-js/issues"
+  },
+  "homepage": "https://github.com/arkamedus/scraps-js#readme"
+}
