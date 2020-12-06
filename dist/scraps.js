@@ -734,19 +734,21 @@ var CodeSandbox = (function () {
             sandbox.output_element.scrollTop = sandbox.element.scrollTop;
             sandbox.output_element.scrollLeft = sandbox.element.scrollLeft;
         };
-        this.element.onkeydown = function (key) {
+        this.element.onkeydown = this.element.onpaste = function (event) {
+            _this.scrap.clearWarning();
             var input = sandbox.element, selStartPos = input.selectionStart, inputVal = input.value;
-            if (key.keyCode === 9) {
+            if (event instanceof KeyboardEvent && event.keyCode && event.keyCode === 9) {
                 input.value = inputVal.substring(0, selStartPos) + "    " + inputVal.substring(selStartPos, input.value.length);
                 input.selectionStart = selStartPos + 4;
                 input.selectionEnd = selStartPos + 4;
-                key.preventDefault();
+                event.preventDefault();
             }
             window.setTimeout(function () {
                 sandbox.renderCodeHighlighting();
             }, 1);
         };
         this.element.onkeyup = function () {
+            _this.scrap.clearWarning();
             _this.scrap.updateEvaluationResponse(new ScrapsEvaluationResponse(SCRAPS_EVALUATION_RESULT_TYPE.EDITING, {}));
             return false;
             context.executeStack(false);
@@ -772,8 +774,10 @@ var CodeSandbox = (function () {
         return el;
     };
     CodeSandbox.prototype.getCompiled = function () {
-        var build_variables = "\n\t\tfunction makeIdentifiableProperty(i){\n\t\t\treturn typeof i + (!!i?i.toString():\"unknown\");\n\t\t}\n\t\tlet utils = new KernelUtils(kernel);\n\t\tlet p = utils.p.bind(utils);\n\t\tlet h1 = utils.h1.bind(utils);\n\t\tlet h2 = utils.h2.bind(utils);\n\t\tlet print = kernel.print.bind(kernel)\n\t\tlet field = utils.getRenderArea();\n\t\t";
-        return build_variables + " " + this.input.replace(/;/g, ";") + ";";
+        var build_variables = "\n\t\tfunction makeIdentifiableProperty(i){\n\t\t\treturn typeof i + (!!i?i.toString():\"unknown\");\n\t\t}\n\t\tlet utils = new KernelUtils(kernel);\n\t\tlet p = utils.p.bind(utils);\n\t\tlet h1 = utils.h1.bind(utils);\n\t\tlet h2 = utils.h2.bind(utils);\n\t\tlet print = kernel.print.bind(kernel);\n\t\tlet field = utils.getRenderArea();\n";
+        var escaped = this.input.replace(/`/g, "\`");
+        var fn = "" + build_variables + escaped.replace(/;/g, ";");
+        return fn;
     };
     CodeSandbox.prototype.getLambda = function () {
         var args = "kernel";
@@ -789,9 +793,11 @@ var ScrapControls = (function () {
     }
     ScrapControls.prototype.load = function () {
         var _this = this;
-        this.result_type_element.innerHTML = '<i class="fas fa-fw fa-ellipsis-h"></i> ';
-        var evaluate_element = document.createElement("button");
-        evaluate_element.innerHTML = '<i class="fas fa-fw fa-play"></i> Run';
+        this.result_type_element.innerHTML = '<i class="fas fa-fw fa-ellipsis-h"></i>';
+        this.result_type_element.className = 'border-left';
+        var evaluate_element = document.createElement("span");
+        evaluate_element.innerHTML = '<i class="far fa-fw fa-play-circle"></i> Run';
+        evaluate_element.className = "button";
         evaluate_element.onclick = function () {
             var result = _this.scrap.evaluate(true);
             _this.update(result);
@@ -803,19 +809,23 @@ var ScrapControls = (function () {
         if (this.last_result_state === result.type) {
             return;
         }
+        this.result_type_element.className = 'border-left';
         this.last_result_state = result.type;
         switch (result.type) {
             case SCRAPS_EVALUATION_RESULT_TYPE.COMPILATION_ERROR:
-                this.result_type_element.innerHTML = '<i class="fas fa-fw fa-bug"></i> ';
+                this.result_type_element.innerHTML = '<i class="fas fa-fw fa-bug"></i>';
+                this.result_type_element.className += ' error';
                 break;
             case SCRAPS_EVALUATION_RESULT_TYPE.RUNTIME_ERROR:
-                this.result_type_element.innerHTML = '<i class="fas fa-fw fa-bug"></i> ';
+                this.result_type_element.innerHTML = '<i class="fas fa-fw fa-bug"></i>';
+                this.result_type_element.className += ' warn';
                 break;
             case SCRAPS_EVALUATION_RESULT_TYPE.ARTIFACT:
-                this.result_type_element.innerHTML = '<i class="fas fa-fw fa-check"></i> ';
+                this.result_type_element.innerHTML = '<i class="fas fa-fw fa-check"></i>';
+                this.result_type_element.className += ' success';
                 break;
             case SCRAPS_EVALUATION_RESULT_TYPE.EDITING:
-                this.result_type_element.innerHTML = '<i class="fas fa-fw fa-ellipsis-h"></i> ';
+                this.result_type_element.innerHTML = '<i class="fas fa-fw fa-ellipsis-h"></i>';
                 break;
         }
     };
@@ -825,9 +835,17 @@ var Scrap = (function () {
     function Scrap(context) {
         this.context = context.register(this);
         this.area_control = document.createElement('div');
+        this.area_control.className = "controls";
         this.area_working = document.createElement('div');
+        this.area_working.className = "working";
         this.area_render = document.createElement('div');
+        this.area_render.className = "display";
         this.area_console = document.createElement('div');
+        this.area_console.className = "artifacts";
+        this.warning_line_element = document.createElement('div');
+        this.warning_line_element.className = "warning-line";
+        this.warning_position_element = document.createElement('div');
+        this.warning_position_element.className = "warning-position";
         this.controls = new ScrapControls(this);
         this.utils = new KernelUtils(this);
     }
@@ -837,6 +855,8 @@ var Scrap = (function () {
     Scrap.prototype.load = function (element) {
         this.sandbox = new CodeSandbox(this, element.innerHTML);
         element.innerHTML = "";
+        this.area_working.appendChild(this.warning_line_element);
+        this.sandbox.output_element.appendChild(this.warning_position_element);
         this.area_working.appendChild(this.sandbox.getElement());
         this.controls.load();
         element.appendChild(this.area_render);
@@ -853,6 +873,7 @@ var Scrap = (function () {
     };
     Scrap.prototype.evaluate = function (flush) {
         var self = this;
+        this.clearWarning();
         if (flush) {
             window.clearTimeout(this.debounce);
             this.debounce = null;
@@ -860,9 +881,20 @@ var Scrap = (function () {
         else {
         }
         try {
-            var fn = this.getSandbox().getLambda();
+            var fn = void 0;
+            try {
+                fn = this.getSandbox().getLambda();
+            }
+            catch (compilation_error) {
+                if (self.onlyIfChanges(this.area_console.innerHTML, compilation_error.name + ": " + (compilation_error.message) + JSON.stringify(compilation_error.message))) {
+                    this.area_console.innerHTML = compilation_error.name + ": " + (compilation_error.message);
+                    this.area_console.className += ' error';
+                }
+                return new ScrapsEvaluationResponse(SCRAPS_EVALUATION_RESULT_TYPE.COMPILATION_ERROR, JSON.stringify(compilation_error.message));
+            }
             try {
                 this.area_console.innerText = '';
+                this.area_console.className = 'artifacts';
                 this.area_render.innerHTML = "";
                 this.artifacts = fn(this);
                 if (this.artifacts !== undefined && JSON.stringify(this.artifacts) !== "{}" && JSON.stringify(this.artifacts) !== "undefined") {
@@ -882,18 +914,66 @@ var Scrap = (function () {
                 return new ScrapsEvaluationResponse(SCRAPS_EVALUATION_RESULT_TYPE.ARTIFACT, {});
             }
             catch (e) {
-                if (self.onlyIfChanges(this.area_console.innerHTML, "Runtime Error: " + JSON.stringify(e.message))) {
-                    this.area_console.innerHTML = "Runtime Error: " + JSON.stringify(e.message);
+                if (self.onlyIfChanges(this.area_console.innerHTML, e.name + ": " + (e.message) + JSON.stringify(e.message))) {
+                    this.area_console.innerHTML = e.name + ": " + (e.message);
+                    this.area_console.className += ' warn';
+                    var err_pos = this.getErrorPositionFromError(e);
+                    err_pos[0] -= 13;
+                    this.setWarning(SCRAPS_EVALUATION_RESULT_TYPE.RUNTIME_ERROR, err_pos);
                     return new ScrapsEvaluationResponse(SCRAPS_EVALUATION_RESULT_TYPE.RUNTIME_ERROR, JSON.stringify(e.message));
                 }
             }
         }
         catch (e) {
-            if (self.onlyIfChanges(this.area_console.innerHTML, "Compilation Error: " + JSON.stringify(e.message))) {
-                this.area_console.innerHTML = "Compilation Error: " + JSON.stringify(e.message);
+            if (self.onlyIfChanges(this.area_console.innerHTML, e.name + ": " + (e.message) + JSON.stringify(e.message))) {
+                this.area_console.innerHTML = e.name + ": " + (e.message);
+                this.area_console.className += ' error';
+                var err_pos = this.getErrorPositionFromError(e);
+                err_pos[0] -= 13;
+                this.setWarning(SCRAPS_EVALUATION_RESULT_TYPE.COMPILATION_ERROR, err_pos);
                 return new ScrapsEvaluationResponse(SCRAPS_EVALUATION_RESULT_TYPE.COMPILATION_ERROR, JSON.stringify(e.message));
             }
         }
+    };
+    Scrap.prototype.getErrorPositionFromError = function (err) {
+        console.log("INCOMING", err, err.stack);
+        var caller_line_arr = err.stack.split("\n");
+        while (caller_line_arr[0].indexOf("(eval at") == -1 && caller_line_arr.length > 0) {
+            caller_line_arr.shift();
+        }
+        if (caller_line_arr.length === 0) {
+            console.error("UNKNOWN ERROR EXCEPTION", err, err.stack);
+            return;
+        }
+        var caller_line = caller_line_arr[0];
+        console.log("CALLER LINE", caller_line);
+        var check = "<anonymous>:";
+        var pre_column = caller_line.indexOf(check);
+        var slice = caller_line.slice(check.length + pre_column, caller_line.length - 1).split(":");
+        return slice.map(function (v) { return parseFloat(v); });
+    };
+    Scrap.prototype.setWarning = function (type, error_position) {
+        try {
+            this.warning_line_element.style.display = "block";
+            var err_type = type === SCRAPS_EVALUATION_RESULT_TYPE.COMPILATION_ERROR ? "error" : "warn";
+            this.warning_line_element.className = "warning-line " + err_type;
+            this.warning_position_element.className = "warning-position " + err_type;
+            var textarea_top = parseFloat(window.getComputedStyle(this.sandbox.element, null).getPropertyValue('padding-top'));
+            var textarea_left = parseFloat(window.getComputedStyle(this.sandbox.element, null).getPropertyValue('padding-left'));
+            var line_y_em = (error_position[0]) * 1.065;
+            this.warning_line_element.style.marginTop = textarea_top + "px";
+            this.warning_line_element.style.top = line_y_em + "em";
+            this.warning_position_element.style.marginTop = textarea_top + "px";
+            this.warning_position_element.style.marginLeft = textarea_left + "px";
+            this.warning_position_element.style.top = line_y_em + "em";
+            this.warning_position_element.style.left = (error_position[1] - 1) * 0.47 + "em";
+        }
+        catch (e) {
+        }
+    };
+    Scrap.prototype.clearWarning = function () {
+        this.warning_line_element.style.display = "none";
+        this.warning_position_element.style.display = "none";
     };
     Scrap.prototype.updateEvaluationResponse = function (response) {
         this.controls.update(response);

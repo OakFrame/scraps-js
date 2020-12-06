@@ -1,0 +1,106 @@
+.scraps-js {
+
+  textarea, pre, .code, code, .controls, .artifacts {
+    font-family: "Calling Code", Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    font-size: 10pt;
+    outline:none;
+  }
+
+  .code, .artifacts {
+    border-left: 1px solid #999;
+  }
+
+  .border-left {
+    border-left: 1px solid #ddd;
+  }
+
+  .working {
+    position: relative;
+    background-color: #fafafd;
+  }
+
+  .warn {
+    background-color: #ffeaba;
+    color: #795432;
+
+    &.border-left, &.artifacts, &.warning-line {
+      border-left: 1px solid #c79a71;
+    }
+
+    &.warning-position {
+      background-color: #ffeaba;
+    }
+
+  }
+
+  .error {
+    background-color: #f57b67;
+    color: #582222;
+
+    &.border-left, &.artifacts, &.warning-line {
+      border-left: 1px solid #af6666;
+    }
+
+    &.warning-position {
+      background-color: #f57b67;
+    }
+  }
+
+  .success {
+    background-color: #dfffa6;
+    color: #3b4b1f;
+
+    &.border-left, &.artifacts {
+      border-left: 1px solid #8ea763;
+    }
+  }
+
+  .warning-line, .warning-position {
+    position: absolute;
+  }
+
+  .warning-line {
+    width: 100%;
+    height: 1em;
+    display:none;
+    pointer-events: none;
+  }
+
+  .warning-position {
+    width: 1em;
+    height: 1em;
+  }
+
+  .artifacts {
+    padding-left: 1rem;
+  }
+
+  .artifacts {
+    .caret-icon {
+      top: 3px;
+      position: relative;
+    }
+  }
+
+  .controls {
+
+    span, .button {
+      padding: 0 1rem;
+    }
+
+    .button {
+      margin: 0;
+      background-color: #f2f2f6;
+      color: #111;
+      outline: none;
+      border: none;
+      cursor: pointer;
+
+      &:hover {
+        background-color: #dfdfe7;
+        color: #000;
+      }
+    }
+
+  }
+}

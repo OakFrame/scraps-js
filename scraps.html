@@ -10,12 +10,14 @@
 		-webkit-box-sizing: border-box;
 		-moz-box-sizing: border-box;
 		box-sizing: border-box;
-		letter-spacing: 0.02em;
+	}
+
+	html, body {
 		font-family: 'DM Sans', sans-serif;
 	}
 
-	textarea {
-		font-family: "Calling Code", Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+	.scraps-js {
+		margin-bottom: 1rem;
 	}
 
 </style>
@@ -29,14 +31,13 @@
 
 <div style="max-width:920pt;margin: 0 auto;">
 
-<div class="scraps-js">project_name = `ScrapsContext-JS`;
+<div class="scraps-js">project_name = `Scraps-JS`;
 order = 1;</div>
-
 	<div class="scraps-js">link = `<a href='https://oakframe.org'>OakFrame</a>`;
 print( h1( `Welcome to your first ${project_name} Project` ) );
 print( p( `As you can see, much of this website is controlled by code, written in this area below called a Scrap.<br/>It's just javascript, and a few little features we've added as a state management system.` ) );
 return {order};</div>
-
+	<p>Just like a regular html page, you can have paragraphs tags between Scraps.</p>
 <div class="scraps-js">print( p( `We are able to make variable definitions in one leaf, and we should be able to pick it up later in any other leaf, in both directions.<br/>Only variables not prefixed with let, var, or const are kept in State, so your print function calls and strings will be unaffected.` ) );
 print( h2( `Copyright ${link} ${new Date().getYear()+1900} - ${project_name}` ) );
 username = `John Doe`;</div>

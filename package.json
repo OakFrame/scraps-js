@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "package": "tsc && mkdir -p dist && cat lib/jsonview.js lib/prism.js scraps.js > dist/scraps.js && cat lib/scraps.css lib/jsonview.css lib/prism.css > dist/scraps.css"
+    "package": "tsc && mkdir -p dist && cat lib/jsonview.js lib/prism.js scraps.js > dist/scraps.js && cat lib/jsonview.css lib/prism.css lib/scraps.css > dist/scraps.css"
   },
   "repository": {
     "type": "git",

@@ -6,15 +6,10 @@ https://prismjs.com/download.html#themes=prism&languages=markup+css+clike+javasc
  * @author Lea Verou
  */
 
-.code * {
-	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
-}
-
 .code {
   position: relative;
 
 [class*="code-input"], [class*="code-output"] {
-	font-size:0.8em;
 	width: 100%;
 	padding: 1rem;
 	border: none;
@@ -31,7 +26,7 @@ https://prismjs.com/download.html#themes=prism&languages=markup+css+clike+javasc
 	color: #999;
 	resize: none;
 	//margin-bottom: 20px;
-	background-color:#fafafd;
+	//background-color:#fafafd;
 }
 
 [class*="code-output"] {
@@ -118,7 +113,6 @@ pre[class*="language-"] {
 .language-css .token.string,
 .style .token.string {
 	color: #9a6e3a;
-	background: hsla(0, 0%, 100%, .5);
 }
 
 .token.atrule,

@@ -1,3 +1,79 @@
-
+.scraps-js textarea, .scraps-js pre, .scraps-js .code, .scraps-js code, .scraps-js .controls, .scraps-js .artifacts {
+  font-family: "Calling Code", Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+  font-size: 10pt;
+  outline: none;
+}
+.scraps-js .code, .scraps-js .artifacts {
+  border-left: 1px solid #999;
+}
+.scraps-js .border-left {
+  border-left: 1px solid #ddd;
+}
+.scraps-js .working {
+  position: relative;
+  background-color: #fafafd;
+}
+.scraps-js .warn {
+  background-color: #ffeaba;
+  color: #795432;
+}
+.scraps-js .warn.border-left, .scraps-js .warn.artifacts, .scraps-js .warn.warning-line {
+  border-left: 1px solid #c79a71;
+}
+.scraps-js .warn.warning-position {
+  background-color: #ffeaba;
+}
+.scraps-js .error {
+  background-color: #f57b67;
+  color: #582222;
+}
+.scraps-js .error.border-left, .scraps-js .error.artifacts, .scraps-js .error.warning-line {
+  border-left: 1px solid #af6666;
+}
+.scraps-js .error.warning-position {
+  background-color: #f57b67;
+}
+.scraps-js .success {
+  background-color: #dfffa6;
+  color: #3b4b1f;
+}
+.scraps-js .success.border-left, .scraps-js .success.artifacts {
+  border-left: 1px solid #8ea763;
+}
+.scraps-js .warning-line, .scraps-js .warning-position {
+  position: absolute;
+}
+.scraps-js .warning-line {
+  width: 100%;
+  height: 1em;
+  display: none;
+  pointer-events: none;
+}
+.scraps-js .warning-position {
+  width: 1em;
+  height: 1em;
+}
+.scraps-js .artifacts {
+  padding-left: 1rem;
+}
+.scraps-js .artifacts .caret-icon {
+  top: 3px;
+  position: relative;
+}
+.scraps-js .controls span, .scraps-js .controls .button {
+  padding: 0 1rem;
+}
+.scraps-js .controls .button {
+  margin: 0;
+  background-color: #f2f2f6;
+  color: #111;
+  outline: none;
+  border: none;
+  cursor: pointer;
+}
+.scraps-js .controls .button:hover {
+  background-color: #dfdfe7;
+  color: #000;
+}
 
 /*# sourceMappingURL=scraps.css.map */
