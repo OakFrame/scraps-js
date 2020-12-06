@@ -47,12 +47,13 @@ code {
 	padding: 1rem;
 	display: block;
 	overflow: hidden;
+	word-wrap: break-word;
 }
 }
 
 @supports (-webkit-overflow-scrolling: touch) {
 	[class*="code-output"] {
-		left: 3px;
+		//left: 3px;
 	}
 }
 }
@@ -60,6 +61,7 @@ code {
 
 code[class*="language-"],
 pre[class*="language-"] {
+	width: 100%;
 	background: none;
 	text-align: left;
 	white-space: pre;

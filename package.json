@@ -19,5 +19,6 @@
   "bugs": {
     "url": "https://github.com/arkamedus/scraps-js/issues"
   },
-  "homepage": "https://github.com/arkamedus/scraps-js#readme"
+  "homepage": "https://github.com/arkamedus/scraps-js#readme",
+  "dependencies": {}
 }

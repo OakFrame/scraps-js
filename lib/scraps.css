@@ -2,9 +2,36 @@
   font-family: "Calling Code", Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
   font-size: 10pt;
   outline: none;
+  line-height: initial;
 }
 .scraps-js .code, .scraps-js .artifacts {
   border-left: 1px solid #999;
+}
+.scraps-js .artifacts {
+  overflow-wrap: break-word;
+}
+.scraps-js .button {
+  position: relative;
+  padding: 0 1rem;
+  display: inline-block;
+}
+.scraps-js .button {
+  margin: 0;
+  background-color: #f2f2f6;
+  color: #111;
+  outline: none;
+  border: none;
+  cursor: pointer;
+}
+.scraps-js .button:hover {
+  background-color: #dfdfe7;
+  color: #000;
+}
+.scraps-js .button.disabled {
+  pointer-events: none;
+}
+.scraps-js .button i {
+  line-height: inherit;
 }
 .scraps-js .border-left {
   border-left: 1px solid #ddd;
@@ -60,20 +87,10 @@
   top: 3px;
   position: relative;
 }
-.scraps-js .controls span, .scraps-js .controls .button {
-  padding: 0 1rem;
-}
-.scraps-js .controls .button {
-  margin: 0;
-  background-color: #f2f2f6;
-  color: #111;
-  outline: none;
-  border: none;
-  cursor: pointer;
-}
-.scraps-js .controls .button:hover {
-  background-color: #dfdfe7;
-  color: #000;
+@media screen and (max-width: 600px) {
+  .scraps-js .controls div, .scraps-js .controls .button {
+    line-height: 200%;
+  }
 }
 
 /*# sourceMappingURL=scraps.css.map */

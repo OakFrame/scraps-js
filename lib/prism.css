@@ -41,15 +41,11 @@ https://prismjs.com/download.html#themes=prism&languages=markup+css+clike+javasc
   padding: 1rem;
   display: block;
   overflow: hidden;
+  word-wrap: break-word;
 }
-@supports (-webkit-overflow-scrolling: touch) {
-  .code [class*=code-output] {
-    left: 3px;
-  }
-}
-
 code[class*=language-],
 pre[class*=language-] {
+  width: 100%;
   background: none;
   text-align: left;
   white-space: pre;

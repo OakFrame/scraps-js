@@ -16,13 +16,13 @@ Add Scraps to your page (creates a blank scrap)
 
 Or, with some included JS:
 ```html
-<div class="scraps-js">project_name = 'ScrapsContext-JS';
+<div class="scraps-js">project_name = 'Scraps-JS';
 order = 1;</div>
 ```
 
 Include the following JS file in your page, after any scraps
 ```html
-<script src="dist/scraps.js"></script>
+<script src="https://oakframe.org/dist/scraps.js"></script>
 ```
 
 //TODO
