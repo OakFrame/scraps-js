@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "package": "tsc && mkdir -p dist && cat lib/jsonview.js lib/prism.js scraps.js > dist/scraps.js && cat lib/jsonview.css lib/prism.css lib/scraps.css > dist/scraps.css"
+    "package": "tsc && mkdir -p dist && cat lib/jsonview.js lib/prism.js scraps.js > dist/prepack.js && webpack && npx google-closure-compiler --js=dist/postpack.js --js_output_file=dist/scraps.js && cat lib/jsonview.css lib/prism.css lib/scraps.css > dist/scraps.css && rm dist/postpack.js && rm dist/prepack.js"
   },
   "repository": {
     "type": "git",
@@ -20,5 +20,14 @@
     "url": "https://github.com/arkamedus/scraps-js/issues"
   },
   "homepage": "https://github.com/arkamedus/scraps-js#readme",
-  "dependencies": {}
+  "dependencies": {
+    "acorn": "^8.0.4",
+    "webpack": "^5.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.10",
+    "closure-webpack-plugin": "^2.3.0",
+    "google-closure-compiler": "^20201102.0.1",
+    "webpack-cli": "^4.2.0"
+  }
 }

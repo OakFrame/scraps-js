@@ -191,6 +191,9 @@ pre[class*=language-] {
 }
 
 /*# sourceMappingURL=prism.css.map */
+.scraps-js code {
+  z-index: 1;
+}
 .scraps-js textarea, .scraps-js pre, .scraps-js .code, .scraps-js code, .scraps-js .controls, .scraps-js .artifacts {
   font-family: "Calling Code", Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
   font-size: 10pt;
@@ -250,6 +253,9 @@ pre[class*=language-] {
 .scraps-js .error.border-left, .scraps-js .error.artifacts, .scraps-js .error.warning-line {
   border-left: 1px solid #af6666;
 }
+.scraps-js .error.warning-line {
+  background-color: #f57b67;
+}
 .scraps-js .error.warning-position {
   background-color: #f57b67;
 }
@@ -262,16 +268,19 @@ pre[class*=language-] {
 }
 .scraps-js .warning-line, .scraps-js .warning-position {
   position: absolute;
-}
-.scraps-js .warning-line {
-  width: 100%;
-  height: 1em;
-  display: none;
+  font-size: initial;
   pointer-events: none;
 }
-.scraps-js .warning-position {
+.scraps-js .warning-line {
+  display: none;
   width: 1em;
   height: 1em;
+}
+.scraps-js .warning-position {
+  display: none;
+  width: 1em;
+  height: 1em;
+  z-index: -1;
 }
 .scraps-js .artifacts {
   padding-left: 1rem;

@@ -1,13 +1,23 @@
 {
   "compilerOptions": {
-    "module": "system",
-    "noImplicitAny": true,
-    "removeComments": true,
-    "preserveConstEnums": true,
-    "outFile": "scraps.js",
-    "sourceMap": true
+    "target": "ES6",
+    "typeRoots": [
+      "./node_modules/@types"
+    ],
+    "experimentalDecorators": true,
+    "lib": [
+      "es6",
+      "dom"
+    ],
+    "moduleResolution": "node"
   },
-  "include": [
+  "files": [
     "scraps.ts"
+  ],
+  "include": [
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
   ]
 }

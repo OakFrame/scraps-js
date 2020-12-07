@@ -2,3 +2,4 @@
 .DS_Store
 *.js.map
 *.css.map
+node_modules/
