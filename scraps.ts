@@ -1,7 +1,7 @@
 const Parser = require("acorn");
 
 function validate(code) {
-    return (Parser.parse(code, {ecmaVersion: 2020}));
+    return (Parser.parse(code, {ecmaVersion: "latest",allowReturnOutsideFunction:true}));
 }
 
 class ScrapsContext {
@@ -325,33 +325,7 @@ class Scrap {
 
             //  return;
         }
-        try {
-            const f = `function _____a (){${this.getSandbox().getCompiled()}}`;
-            validate(f);
-        } catch (e) {
 
-            var regExp = /\(([^)]+)\)/;
-            var matches = regExp.exec(e.message);
-            let validation_error_position = matches[1].split(":").map((v) => {
-                return parseInt(v);
-            });
-            validation_error_position[0] -= 11;
-            validation_error_position[1] += 1;
-
-            if (e.message.indexOf("expected token") !== -1) {
-                //validation_error_position[1]--;
-            }
-
-            let error_message = e.message.split("(")[0];
-
-            if (self.onlyIfChanges(this.area_console.innerHTML, e.name + ": " + (error_message))) {
-                this.area_console.innerHTML = e.name + ": " + (error_message);
-                this.area_console.className += ' error';
-            }
-
-            this.setWarning(SCRAPS_EVALUATION_RESULT_TYPE.COMPILATION_ERROR, validation_error_position);
-            return new ScrapsEvaluationResponse(SCRAPS_EVALUATION_RESULT_TYPE.COMPILATION_ERROR, e.name);
-        }
 
         try {
             let fn;
@@ -387,6 +361,7 @@ class Scrap {
                 }
                 return new ScrapsEvaluationResponse(SCRAPS_EVALUATION_RESULT_TYPE.ARTIFACT, {});
             } catch (e) {
+                console.log("RUNTIME ERROR");
                 if (self.onlyIfChanges(this.area_console.innerHTML, e.name + ": " + (e.message) + JSON.stringify(e.message))) {
                     this.area_console.innerHTML = e.name + ": " + (e.message);
                     this.area_console.className += ' warn';
@@ -404,6 +379,35 @@ class Scrap {
             }
 
         } catch (e) {
+            console.log("COMPILE FAILED")
+            try {
+                const f = this.getSandbox().getCompiled();
+                validate(f);
+            } catch (e) {
+                console.log("VAIDATE FAILED")
+                var regExp = /\(([^)]+)\)/;
+                var matches = regExp.exec(e.message);
+                let validation_error_position = matches[1].split(":").map((v) => {
+                    return parseInt(v);
+                });
+                validation_error_position[0] -= 11;
+                validation_error_position[1] += 1;
+
+                if (e.message.indexOf("expected token") !== -1) {
+                    //validation_error_position[1]--;
+                }
+
+                let error_message = e.message.split("(")[0];
+
+                if (self.onlyIfChanges(this.area_console.innerHTML, e.name + ": " + (error_message))) {
+                    this.area_console.innerHTML = e.name + ": " + (error_message);
+                    this.area_console.className += ' error';
+                }
+
+                this.setWarning(SCRAPS_EVALUATION_RESULT_TYPE.COMPILATION_ERROR, validation_error_position);
+                return new ScrapsEvaluationResponse(SCRAPS_EVALUATION_RESULT_TYPE.COMPILATION_ERROR, e.name);
+            }
+            console.log("UNKNOWN ERROR, DEFAULT TO BROWSER ERROR")
             if (self.onlyIfChanges(this.area_console.innerHTML, e.name + ": " + (e.message) + JSON.stringify(e.message))) {
                 this.area_console.innerHTML = e.name + ": " + (e.message);
                 this.area_console.className += ' error';
@@ -416,7 +420,6 @@ class Scrap {
     }
 
     getErrorPositionFromError(err: Error) {
-        console.log("INCOMING", err, err.stack);
         let caller_line_arr = err.stack.split("\n");
         while (caller_line_arr[0].indexOf("(eval at") == -1 && caller_line_arr.length > 0) {
             caller_line_arr.shift();
