@@ -62,7 +62,6 @@ class CodeSandbox {
         // @ts-ignore
         this.element.onkeydown = this.element.onpaste = (event) => {
             if (!this.window_scroll) {
-                //    console.log("SAVINGN SCROLL POSITION", window.scrollY);
                 this.window_scroll = window.scrollY;
             }
             this.scrap.clearWarning();
@@ -99,10 +98,25 @@ class CodeSandbox {
         };
     }
     renderCodeHighlighting() {
-        this.element.style.height = "5px";
-        //if ((this.element.scrollHeight) !== parseFloat(this.element.style.height)) {
-        this.element.style.height = (this.element.scrollHeight) + "px";
-        this.output_code.style.height = (this.element.scrollHeight) + "px";
+        let lines = this.element.value.split(/\r*\n/).length;
+        if (lines !== this.window_lines) {
+            this.window_lines = lines;
+            console.log("CURRENT WINDOW SCROLL", window.scrollY);
+            // this.element.style.height = "5px";
+            //if ((this.element.scrollHeight) !== parseFloat(this.element.style.height)) {
+            this.element.style.height = (this.element.scrollHeight) + "px";
+            this.output_code.style.height = (this.element.scrollHeight) + "px";
+            console.log("AFTER HEIGHT UPDATE", window.scrollY);
+            //window.scrollTo(0, this.window_scroll);
+            window.scrollTo({
+                top: this.window_scroll,
+                left: 0,
+                behavior: 'auto'
+            });
+            console.log("AFTER WINDOW SCROLL", window.scrollY);
+            //window.scrollTo(0, scrollY);
+        }
+        this.window_scroll = null;
         // }
         //  window.setTimeout(function(){
         //},1)
@@ -128,12 +142,12 @@ class CodeSandbox {
 		function makeIdentifiableProperty(i){
 			return typeof i + (!!i?i.toString():"unknown");
 		}
-		let utils = new KernelUtils(kernel);
+		let utils = new KernelUtils(scrap);
 		let p = utils.p.bind(utils);
 		let h1 = utils.h1.bind(utils);
 		let h2 = utils.h2.bind(utils);
-		let print = kernel.print.bind(kernel);
-		let field = utils.getRenderArea();
+		let print = scrap.print.bind(scrap);
+		
 `;
         //let matched_es6_classes = this.input.match(/class ([a-zA-Z]+)/)
         let escaped = this.input.replace(/`/g, "\`").replace(/class ([a-zA-Z]+)/, function (m) {
@@ -144,7 +158,7 @@ class CodeSandbox {
         return fn;
     }
     getLambda() {
-        let args = "kernel";
+        let args = "scrap";
         return new Function(args, this.getCompiled());
     }
 }
@@ -212,7 +226,14 @@ class Scrap {
         this.utils = new KernelUtils(this);
     }
     print(element) {
-        this.area_render.appendChild(element);
+        if (element instanceof HTMLElement) {
+            this.area_render.appendChild(element);
+        }
+        else {
+            let d = document.createElement("div");
+            d.innerText = element.toString();
+            this.area_render.appendChild(d);
+        }
     }
     load(element) {
         this.sandbox = new CodeSandbox(this, element.innerHTML);
@@ -334,18 +355,24 @@ class Scrap {
     }
     getErrorPositionFromError(err) {
         let caller_line_arr = err.stack.split("\n");
-        while (caller_line_arr[0].indexOf("(eval at") == -1 && caller_line_arr.length > 0) {
-            caller_line_arr.shift();
+        let slice;
+        if (caller_line_arr[0]) {
+            while (caller_line_arr[0].indexOf("(eval at") == -1 && caller_line_arr.length > 0) {
+                caller_line_arr.shift();
+            }
+            if (caller_line_arr.length === 0) {
+                console.error("UNKNOWN ERROR EXCEPTION", err, err.stack);
+                return;
+            }
+            const caller_line = caller_line_arr[0];
+            console.log("CALLER LINE", caller_line);
+            let check = "<anonymous>:";
+            let pre_column = caller_line.indexOf(check);
+            slice = caller_line.slice(check.length + pre_column, caller_line.length - 1).split(":");
         }
-        if (caller_line_arr.length === 0) {
-            console.error("UNKNOWN ERROR EXCEPTION", err, err.stack);
-            return;
+        else {
+            console.log(err.message, err.stack);
         }
-        const caller_line = caller_line_arr[0];
-        console.log("CALLER LINE", caller_line);
-        let check = "<anonymous>:";
-        let pre_column = caller_line.indexOf(check);
-        let slice = caller_line.slice(check.length + pre_column, caller_line.length - 1).split(":");
         return slice.map((v) => {
             return parseFloat(v);
         });
@@ -382,8 +409,8 @@ class Scrap {
     }
 }
 class KernelUtils {
-    constructor(kernel) {
-        this.kernel = kernel;
+    constructor(scrap) {
+        this.scrap = scrap;
     }
     p(string) {
         let el = document.createElement('p');
@@ -406,7 +433,7 @@ class KernelUtils {
         return el;
     }
     getRenderArea() {
-        return this.kernel.area_render;
+        return this.scrap.area_render;
     }
 }
 window['KernelUtils'] = KernelUtils;

@@ -59,6 +59,7 @@ class CodeSandbox {
     output_code: HTMLElement;
     scrap: Scrap;
     window_scroll: (number | null);
+    window_lines;
 
     constructor(scrap: Scrap, code: string) {
         let sandbox = this;
@@ -84,10 +85,11 @@ class CodeSandbox {
 
         // @ts-ignore
         this.element.onkeydown = this.element.onpaste = (event: (Event | KeyboardEvent)) => {
-            if (!this.window_scroll) {
-                //    console.log("SAVINGN SCROLL POSITION", window.scrollY);
-                this.window_scroll = window.scrollY;
+
+            if (!this.window_scroll){
+                this.window_scroll = window.scrollY
             }
+
             this.scrap.clearWarning();
             // console.log((<HTMLTextAreaElement>event.srcElement).value);
             var input = sandbox.element,
@@ -127,10 +129,26 @@ class CodeSandbox {
     }
 
     renderCodeHighlighting() {
-        this.element.style.height = "5px";
-        //if ((this.element.scrollHeight) !== parseFloat(this.element.style.height)) {
-        this.element.style.height = (this.element.scrollHeight) + "px";
-        this.output_code.style.height = (this.element.scrollHeight) + "px";
+        let lines = this.element.value.split(/\r*\n/).length;
+        if (lines !== this.window_lines) {
+            this.window_lines = lines;
+            console.log("CURRENT WINDOW SCROLL", window.scrollY);
+            // this.element.style.height = "5px";
+            //if ((this.element.scrollHeight) !== parseFloat(this.element.style.height)) {
+            this.element.style.height = (this.element.scrollHeight) + "px";
+            this.output_code.style.height = (this.element.scrollHeight) + "px";
+            console.log("AFTER HEIGHT UPDATE", window.scrollY);
+            //window.scrollTo(0, this.window_scroll);
+            window.scrollTo({
+                top: this.window_scroll,
+                left: 0,
+                behavior: 'auto'
+            });
+            console.log("AFTER WINDOW SCROLL", window.scrollY);
+
+            //window.scrollTo(0, scrollY);
+        }
+        this.window_scroll = null;
         // }
         //  window.setTimeout(function(){
 
@@ -165,8 +183,8 @@ class CodeSandbox {
 		let p = utils.p.bind(utils);
 		let h1 = utils.h1.bind(utils);
 		let h2 = utils.h2.bind(utils);
-		let print = kernel.print.bind(scrap);
-		let field = utils.getRenderArea();
+		let print = scrap.print.bind(scrap);
+		
 `;
 
         //let matched_es6_classes = this.input.match(/class ([a-zA-Z]+)/)
@@ -176,7 +194,6 @@ class CodeSandbox {
         });
 
         const fn = `${build_variables}${escaped}`;
-
 
         return fn;
     }
@@ -283,8 +300,14 @@ class Scrap {
         this.utils = new KernelUtils(this);
     }
 
-    print(element: HTMLElement) {
-        this.area_render.appendChild(element);
+    print(element: HTMLElement | any) {
+        if (element instanceof HTMLElement) {
+            this.area_render.appendChild(element);
+        } else {
+            let d = document.createElement("div");
+            d.innerText = element.toString();
+            this.area_render.appendChild(d);
+        }
     }
 
     load(element: HTMLElement | Element) {
@@ -427,21 +450,28 @@ class Scrap {
 
     getErrorPositionFromError(err: Error) {
         let caller_line_arr = err.stack.split("\n");
-        while (caller_line_arr[0].indexOf("(eval at") == -1 && caller_line_arr.length > 0) {
-            caller_line_arr.shift();
+
+        let slice;
+        if (caller_line_arr[0]) {
+            while (caller_line_arr[0].indexOf("(eval at") == -1 && caller_line_arr.length > 0) {
+                caller_line_arr.shift();
+            }
+            if (caller_line_arr.length === 0) {
+                console.error("UNKNOWN ERROR EXCEPTION", err, err.stack);
+                return;
+            }
+
+            const caller_line = caller_line_arr[0];
+            console.log("CALLER LINE", caller_line);
+
+            let check = "<anonymous>:";
+            let pre_column = caller_line.indexOf(check);
+            slice = caller_line.slice(check.length + pre_column, caller_line.length - 1).split(":");
+        } else {
+            console.log(err.message, err.stack);
         }
 
-        if (caller_line_arr.length === 0) {
-            console.error("UNKNOWN ERROR EXCEPTION", err, err.stack);
-            return;
-        }
 
-        const caller_line = caller_line_arr[0];
-        console.log("CALLER LINE", caller_line);
-
-        let check = "<anonymous>:";
-        let pre_column = caller_line.indexOf(check);
-        let slice = caller_line.slice(check.length + pre_column, caller_line.length - 1).split(":");
         return slice.map((v: string) => {
             return parseFloat(v);
         });
