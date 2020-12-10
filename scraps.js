@@ -1,3 +1,12 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 const Parser = require("acorn");
 function validate(code) {
     return (Parser.parse(code, { ecmaVersion: "latest", allowReturnOutsideFunction: true }));
@@ -13,7 +22,6 @@ class ScrapsContext {
     executeStack(flush) {
         this.scraps.forEach(function (scrap) {
             const result = scrap.evaluate(flush);
-            console.log("RESULT", result);
             scrap.updateEvaluationResponse(result);
         });
     }
@@ -99,21 +107,18 @@ class CodeSandbox {
     }
     renderCodeHighlighting() {
         let lines = this.element.value.split(/\r*\n/).length;
-        if (lines !== this.window_lines) {
+        if (lines !== this.window_lines && !this.scrap.options.fixedSize) {
             this.window_lines = lines;
-            console.log("CURRENT WINDOW SCROLL", window.scrollY);
-            // this.element.style.height = "5px";
+            this.element.style.height = "5px";
             //if ((this.element.scrollHeight) !== parseFloat(this.element.style.height)) {
             this.element.style.height = (this.element.scrollHeight) + "px";
             this.output_code.style.height = (this.element.scrollHeight) + "px";
-            console.log("AFTER HEIGHT UPDATE", window.scrollY);
             //window.scrollTo(0, this.window_scroll);
             window.scrollTo({
                 top: this.window_scroll,
                 left: 0,
                 behavior: 'auto'
             });
-            console.log("AFTER WINDOW SCROLL", window.scrollY);
             //window.scrollTo(0, scrollY);
         }
         this.window_scroll = null;
@@ -150,16 +155,24 @@ class CodeSandbox {
 		
 `;
         //let matched_es6_classes = this.input.match(/class ([a-zA-Z]+)/)
-        let escaped = this.input.replace(/`/g, "\`").replace(/class ([a-zA-Z]+)/, function (m) {
-            let classname = m.match(/class ([a-zA-Z]+)/)[1];
+        let escaped = this.input.replace(/`/g, "\`")
+            .replace(/class ([a-zA-Z0-9_]+)/, function (m) {
+            let classname = m.match(/class ([a-zA-Z0-9_]+)/)[1];
             return `window.${classname} = class ${classname}`;
+        })
+            .replace(/function ([a-zA-Z0-9_]+)/, function (m) {
+            let classname = m.match(/function ([a-zA-Z0-9_]+)/)[1];
+            return `window.${classname} = function ${classname}`;
         });
         const fn = `${build_variables}${escaped}`;
         return fn;
     }
     getLambda() {
         let args = "scrap";
-        return new Function(args, this.getCompiled());
+        let AsyncFunction = Object.getPrototypeOf(function () {
+            return __awaiter(this, void 0, void 0, function* () { });
+        }).constructor;
+        return AsyncFunction(args, this.getCompiled());
     }
 }
 class ScrapControls {
@@ -178,8 +191,20 @@ class ScrapControls {
             const result = this.scrap.evaluate(true);
             this.update(result);
         };
+        let run_on_start_element = document.createElement("span");
+        run_on_start_element.innerHTML = `<i class="far fa-fw fa-${this.scrap.options.autorun ? 'check-square' : 'square'}"></i> Auto-run on Load`;
+        run_on_start_element.className = "button";
+        run_on_start_element.onclick = () => {
+            this.scrap.options.autorun = !this.scrap.options.autorun;
+            run_on_start_element.innerHTML = `<i class="far fa-fw fa-${this.scrap.options.autorun ? 'check-square' : 'square'}"></i> Auto-run on Load`;
+        };
         this.element.appendChild(this.result_type_element);
         this.element.appendChild(evaluate_element);
+        if (this.scrap.options.autorun) {
+            const result = this.scrap.evaluate(true);
+            this.update(result);
+        }
+        //this.element.appendChild(run_on_start_element);
     }
     update(result) {
         if (this.last_result_state === result.type) {
@@ -210,6 +235,10 @@ class ScrapControls {
 class Scrap {
     constructor(context) {
         this.context = context.register(this);
+        this.options = {
+            autorun: false,
+            fixedSize: false
+        };
         this.area_control = document.createElement('div');
         this.area_control.className = "controls";
         this.area_working = document.createElement('div');
@@ -236,6 +265,9 @@ class Scrap {
         }
     }
     load(element) {
+        this.container_element = element;
+        this.options.autorun = element.getAttribute("data-autorun") !== null;
+        this.options.fixedSize = element.getAttribute("data-fixed") !== null;
         this.sandbox = new CodeSandbox(this, element.innerHTML);
         element.innerHTML = "";
         this.area_working.appendChild(this.warning_line_element);
@@ -365,7 +397,6 @@ class Scrap {
                 return;
             }
             const caller_line = caller_line_arr[0];
-            console.log("CALLER LINE", caller_line);
             let check = "<anonymous>:";
             let pre_column = caller_line.indexOf(check);
             slice = caller_line.slice(check.length + pre_column, caller_line.length - 1).split(":");
@@ -380,7 +411,6 @@ class Scrap {
     setWarning(type, error_position, error_width = 1) {
         try {
             this.sandbox.output_code.insertBefore(this.warning_position_element, this.sandbox.output_code.firstChild);
-            console.log(this.warning_position_element);
             this.warning_line_element.style.display = "block";
             this.warning_position_element.style.display = "block";
             let err_type = type === SCRAPS_EVALUATION_RESULT_TYPE.COMPILATION_ERROR ? "error" : "warn";
@@ -438,6 +468,7 @@ class KernelUtils {
 }
 window['KernelUtils'] = KernelUtils;
 let context = new ScrapsContext();
+window['ScrapsContext'] = context;
 let elements = document.getElementsByClassName('scraps-js');
 for (let i = 0; i < elements.length; i++) {
     let el = elements[i];

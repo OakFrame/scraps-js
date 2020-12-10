@@ -13,7 +13,6 @@ https://prismjs.com/download.html#themes=prism&languages=markup+css+clike+javasc
   padding: 1rem;
   border: none;
   background: transparent;
-  white-space: pre;
   -moz-tab-size: 4;
   -o-tab-size: 4;
   tab-size: 4;
@@ -48,7 +47,6 @@ pre[class*=language-] {
   width: 100%;
   background: none;
   text-align: left;
-  white-space: pre;
   word-spacing: normal;
   word-break: normal;
   word-wrap: normal;
