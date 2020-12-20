@@ -4,6 +4,10 @@
     z-index: 1;
   }
 
+  pre {
+    overflow: auto;
+  }
+
   textarea, pre, .code, code, .controls, .artifacts {
     font-family: "Calling Code", Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
     font-size: 10pt;

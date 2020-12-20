@@ -113,7 +113,7 @@ pre[class*=language-] {
   -moz-hyphens: none;
   -ms-hyphens: none;
   hyphens: none;
-  overflow: scroll;
+  overflow: auto;
 }
 
 .token.comment,
@@ -191,6 +191,9 @@ pre[class*=language-] {
 /*# sourceMappingURL=prism.css.map */
 .scraps-js code {
   z-index: 1;
+}
+.scraps-js pre {
+  overflow: auto;
 }
 .scraps-js textarea, .scraps-js pre, .scraps-js .code, .scraps-js code, .scraps-js .controls, .scraps-js .artifacts {
   font-family: "Calling Code", Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
