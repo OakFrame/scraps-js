@@ -59,17 +59,19 @@ class CodeSandbox {
     scrap: Scrap;
     window_scroll: (number | null);
     window_lines;
+    intervals;
 
     constructor(scrap: Scrap, code: string) {
         let sandbox = this;
         this.scrap = scrap;
-        this.input = code.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+        this.input = code.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
         this.element = document.createElement('textarea');
         this.element.className = "code-input-";
         this.element.value = this.input;
         this.element.style.width = "100%";
         this.element.rows = 8;
         this.element.spellcheck = false;
+        this.intervals = [];
 
         this.output_element = document.createElement('pre');
         this.output_element.className = "code-output-";
@@ -152,7 +154,7 @@ class CodeSandbox {
         //window.scrollTo(0, scrollY);
 
         this.input = this.element.value;
-        this.output_code.innerHTML = this.input.replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        this.output_code.innerHTML = this.input.replace(/</g, "&lt;")
             .replace(/>/g, "&gt;") + "\n";
 
         let t: number;
@@ -183,16 +185,30 @@ class CodeSandbox {
 		
 `;
 
+        for (let prop of this.intervals){
+            console.log("CLEARING INTERVAL", prop);
+            // @ts-ignore
+            window.clearInterval(window[prop]);
+
+        }
+        this.intervals = [];
+
         //let matched_es6_classes = this.input.match(/class ([a-zA-Z]+)/)
         let escaped = this.input.replace(/`/g, "\`")
-            .replace(/class ([a-zA-Z0-9_]+)/, function (m) {
+            .replace(/class ([a-zA-Z0-9_]+)/g, function (m) {
             let classname = m.match(/class ([a-zA-Z0-9_]+)/)[1];
             return `window.${classname} = class ${classname}`;
             })
-            .replace(/function ([a-zA-Z0-9_]+)/, function (m) {
+            .replace(/function ([a-zA-Z0-9_]+)/g, function (m) {
             let classname = m.match(/function ([a-zA-Z0-9_]+)/)[1];
             return `window.${classname} = function ${classname}`;
             })
+            .replace(/window\.setInterval/g,  (m) => {
+            let interval_name = `_scraps_interval_`+((Math.random()*1000)|0)+((Math.random()*1000)|0)+((Math.random()*1000)|0);
+                this.intervals.push(interval_name);
+                console.log("WATCHING INTERVAL", interval_name);
+                return `window.${interval_name} = window.setInterval`;
+            });
 
         const fn = `${build_variables}${escaped}`;
 
