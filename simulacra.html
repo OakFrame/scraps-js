@@ -1,31 +1,167 @@
 <html>
 
 <head>
-    <link href="https://fonts.googleapis.com/css?family=DM+Sans:400,400i,500,500i,700,700i&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=DM+Sans:400,400i,500,500i,700,700i&display=swap"
+          rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet"/>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" user-scalable="no">
     <style>
-        *{
+        * {
             -webkit-box-sizing: border-box;
             -moz-box-sizing: border-box;
             box-sizing: border-box;
-            letter-spacing: 0.02em;
+        }
+
+        html, body {
             font-family: 'DM Sans', sans-serif;
+            margin: 0;
+            padding: 0;
         }
 
-        textarea {
-            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+        body {
+            height: 100vh;
         }
+
+        .scraps-js {
+
+
+        }
+
+        .working {
+            height: fit-content;
+        }
+
+        .wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+
+            display: grid;
+            border: none;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            grid-gap: 3px;
+            background-color: #fafafd;
+        }
+
+        .one, .two, .three, .four, .five, .six {
+            background-color: #fff;
+            overflow-y: scroll;
+        }
+
+        .one div.controls {
+            white-space: initial;
+        }
+
+        .section {
+            border-bottom: 1px solid #999;
+        }
+
+        .one {
+        // border-style: solid;
+            border-color: blue;
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        .two {
+        // border-style: solid;
+            border-color: yellow;
+            grid-column: 2 / 4;
+            grid-row: 1 / 3;
+        }
+
+        .three {
+        // border-style: solid;
+            border-color: violet;
+            grid-row: 2 / 5;
+            grid-column: 1;
+        }
+
+        .four {
+        // border-style: solid;
+            border-color: aqua;
+            grid-column: 2 / 4;
+            grid-row: 3;
+        }
+
+        .five {
+        // border-style: solid;
+            border-color: green;
+            grid-column: 2;
+            grid-row: 4;
+        }
+
+        .six {
+        // border-style: solid;
+            border-color: purple;
+            grid-column: 3;
+            grid-row: 4;
+        }
+
+        .code {
+            //height: 100%;
+        }
+
     </style>
-
-    <link rel="stylesheet" href="dist/scraps.css" type="text/css" />
+    <link rel="stylesheet" href="dist/scraps.css" type="text/css"/>
 </head>
 
 <body>
 
+<div class="wrapper scraps">
+    <div class="one">
+        <div class="section controls">
+            <div class="button ghost"><i class="fas fa-fw fa-scroll"></i> Scraps</div> <div class="button"><i class="fas fa-fw fa-list-ul"></i> Structure</div> <div class="button"><i class="fas fa-fw fa-list-ul"></i> Project</div> <div class="button"><i class="fas fa-fw fa-list-ul"></i> Project</div>
+        </div>
+        <div class="section controls">
+            <div class="" id="area_control"></div>        </div>
+    </div>
+    <div class="two">
+            <div class="scraps-js" data-fixed="" data-session="simulacra">class Person {
+    name;
+    age;
+    constructor( name, age ){
+        this.name = name;
+        this.age = age;
+    }
+}
+
+// Scrap.print( Scrap.table() );
+
+// With love, forever, from Dallas
+return new Person('August', 20);</div>
+    </div>
+    <div class="three">
+        <div class="section controls"><span class="button ghost"><i class="fas fa-fw fa-layer-group"></i> Return Buffer</span></div>
+        <div class="controls scraps" id="area_artifacts"></div>
+
+    </div>
+    <div class="four" id="area_display"><div class="section controls"><span class="button ghost"><i class="fas fa-fw fa-layer-group"></i> Render Buffer</span></div></div>
+    <div class="five"></div>
+    <div class="six" style="text-align: right;">
+        <div class="controls"><a href="https://oakframe.org" class="button"><i class="fas fa-fw fa-bezier-curve"></i> Built by OakFrame</a></div>
+    </div>
+</div>
+
 </body>
 
-<div class="scraps-js"></div>
+<script src="dist/scraps.js" data-fixed></script>
 
-<script src="dist/scraps.js"></script>
+<script>
 
+    let scrap = ScrapsContext.scraps[0];
+
+    console.log(scrap);
+
+    let window_offset_y = scrap.container_element.offsetTop;
+    console.log(window_offset_y)
+
+    scrap.sandbox.element.style.height = (window.innerHeight - (window_offset_y * 2) - (scrap.area_control.offsetHeight) - (scrap.area_console.offsetHeight)) + "px";
+
+</script>
 
 </html>

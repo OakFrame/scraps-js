@@ -1,6 +1,6 @@
 {
   "name": "scraps-js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Interactive Code Editing in Browser",
   "main": "scraps.js",
   "directories": {
@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "package": "tsc && mkdir -p dist && cat lib/jsonview.js lib/prism.js scraps.js > dist/prepack.js && webpack && npx google-closure-compiler --js=dist/postpack.js --js_output_file=dist/scraps.js && cat lib/jsonview.css lib/prism.css lib/scraps.css > dist/scraps.css && rm dist/postpack.js && rm dist/prepack.js"
+    "package": "tsc && mkdir -p dist && cat lib/jsonview.js lib/prism.js scraps.js > dist/prepack.js && webpack && cat lib/jsonview.css lib/prism.css lib/scraps.css > dist/scraps.css",
+    "postpack": "google-closure-compiler --js=dist/postpack.js --js_output_file=dist/scraps.js && rm dist/postpack.js && rm dist/prepack.js"
   },
   "repository": {
     "type": "git",
@@ -27,7 +28,6 @@
   "devDependencies": {
     "@types/node": "^14.14.10",
     "closure-webpack-plugin": "^2.3.0",
-    "google-closure-compiler": "^20201102.0.1",
     "webpack-cli": "^4.2.0"
   }
 }

@@ -65,12 +65,23 @@ class CodeSandbox {
         let sandbox = this;
         this.scrap = scrap;
         this.input = code.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
-        this.element = document.createElement('textarea');
+
+
+        if (this.scrap.options.session){
+            console.log('SESSION',this.scrap.options.session);
+            let v = window.localStorage.getItem('scraps-js-autosave-'+this.scrap.options.session);
+            if (v && v.length >= 1) {
+                this.input = window.localStorage.getItem('scraps-js-autosave-' + this.scrap.options.session)
+            }
+        }
+
+            this.element = document.createElement('textarea');
         this.element.className = "code-input-";
         this.element.value = this.input;
         this.element.style.width = "100%";
-        this.element.rows = 8;
+        //this.element.rows = 8;
         this.element.spellcheck = false;
+        this.element.style.height = "auto";
         this.intervals = [];
 
         this.output_element = document.createElement('pre');
@@ -87,7 +98,8 @@ class CodeSandbox {
         // @ts-ignore
         this.element.onkeydown = this.element.onpaste = (event: (Event | KeyboardEvent)) => {
 
-            if (!this.window_scroll){
+
+            if (!this.window_scroll) {
                 this.window_scroll = window.scrollY
             }
 
@@ -103,6 +115,11 @@ class CodeSandbox {
                 input.selectionEnd = selStartPos + 4;
                 event.preventDefault();
             }
+
+            if (this.scrap.options.session) {
+                window.localStorage.setItem('scraps-js-autosave-' + this.scrap.options.session, input.value);
+            }
+
             if (mobileCheck() === 0) {
                 window.setTimeout(function () {
                     sandbox.renderCodeHighlighting();
@@ -132,11 +149,12 @@ class CodeSandbox {
     renderCodeHighlighting() {
         let lines = this.element.value.split(/\r*\n/).length;
         if (lines !== this.window_lines && !this.scrap.options.fixedSize) {
+            console.log('NOT FIXED');
             this.window_lines = lines;
-            this.element.style.height = "5px";
+            this.element.style.minHeight = "5px";
             //if ((this.element.scrollHeight) !== parseFloat(this.element.style.height)) {
-            this.element.style.height = (this.element.scrollHeight) + "px";
-            this.output_code.style.height = (this.element.scrollHeight) + "px";
+            this.element.style.minHeight = (this.element.scrollHeight) + "px";
+            this.output_code.style.minHeight = (this.element.scrollHeight) + "px";
             //window.scrollTo(0, this.window_scroll);
             window.scrollTo({
                 top: this.window_scroll,
@@ -157,8 +175,8 @@ class CodeSandbox {
         this.output_code.innerHTML = this.input.replace(/</g, "&lt;")
             .replace(/>/g, "&gt;") + "\n";
 
-        let t: number;
-        t = Date.now();
+//        let t: number;
+        //      t = Date.now();
         // @ts-ignore
         window['Prism'].highlightElement(this.output_code, false, () => {
         });
@@ -177,15 +195,11 @@ class CodeSandbox {
 		function makeIdentifiableProperty(i){
 			return typeof i + (!!i?i.toString():"unknown");
 		}
-		let utils = new KernelUtils(scrap);
-		let p = utils.p.bind(utils);
-		let h1 = utils.h1.bind(utils);
-		let h2 = utils.h2.bind(utils);
-		let print = scrap.print.bind(scrap);
+		const Scrap = new KernelUtils(scrap);
 		
 `;
 
-        for (let prop of this.intervals){
+        for (let prop of this.intervals) {
             console.log("CLEARING INTERVAL", prop);
             // @ts-ignore
             window.clearInterval(window[prop]);
@@ -196,15 +210,15 @@ class CodeSandbox {
         //let matched_es6_classes = this.input.match(/class ([a-zA-Z]+)/)
         let escaped = this.input.replace(/`/g, "\`")
             .replace(/class ([a-zA-Z0-9_]+)/g, function (m) {
-            let classname = m.match(/class ([a-zA-Z0-9_]+)/)[1];
-            return `window.${classname} = class ${classname}`;
+                let classname = m.match(/class ([a-zA-Z0-9_]+)/)[1];
+                return `window.${classname} = class ${classname}`;
             })
             .replace(/function ([a-zA-Z0-9_]+)/g, function (m) {
-            let classname = m.match(/function ([a-zA-Z0-9_]+)/)[1];
-            return `window.${classname} = function ${classname}`;
+                let classname = m.match(/function ([a-zA-Z0-9_]+)/)[1];
+                return `window.${classname} = function ${classname}`;
             })
-            .replace(/window\.setInterval/g,  (m) => {
-            let interval_name = `_scraps_interval_`+((Math.random()*1000)|0)+((Math.random()*1000)|0)+((Math.random()*1000)|0);
+            .replace(/window\.setInterval/g, (m) => {
+                let interval_name = `_scraps_interval_` + ((Math.random() * 1000) | 0) + ((Math.random() * 1000) | 0) + ((Math.random() * 1000) | 0);
                 this.intervals.push(interval_name);
                 console.log("WATCHING INTERVAL", interval_name);
                 return `window.${interval_name} = window.setInterval`;
@@ -217,15 +231,17 @@ class CodeSandbox {
 
     getLambda() {
         let args = "scrap";
-        let AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
+        let AsyncFunction = Object.getPrototypeOf(async function () {
+        }).constructor;
         return AsyncFunction(args, this.getCompiled());
     }
 
 }
 
 interface ScrapOptions {
-    autorun:boolean;
-    fixedSize:boolean;
+    autorun: boolean;
+    session: boolean | string;
+    fixedSize: boolean;
 }
 
 class ScrapControls {
@@ -255,15 +271,14 @@ class ScrapControls {
         }
 
 
-
         let run_on_start_element = document.createElement("span");
 
-        run_on_start_element.innerHTML = `<i class="far fa-fw fa-${this.scrap.options.autorun?'check-square':'square'}"></i> Auto-run on Load`;
+        run_on_start_element.innerHTML = `<i class="far fa-fw fa-${this.scrap.options.autorun ? 'check-square' : 'square'}"></i> Auto-run on Load`;
         run_on_start_element.className = "button";
 
         run_on_start_element.onclick = () => {
             this.scrap.options.autorun = !this.scrap.options.autorun;
-            run_on_start_element.innerHTML = `<i class="far fa-fw fa-${this.scrap.options.autorun?'check-square':'square'}"></i> Auto-run on Load`;
+            run_on_start_element.innerHTML = `<i class="far fa-fw fa-${this.scrap.options.autorun ? 'check-square' : 'square'}"></i> Auto-run on Load`;
         }
 
         this.element.appendChild(this.result_type_element);
@@ -273,8 +288,9 @@ class ScrapControls {
             const result = this.scrap.evaluate(true);
             this.update(result);
         }
-
-        //this.element.appendChild(run_on_start_element);
+        if (this.scrap.options.fixedSize) {
+            this.element.appendChild(run_on_start_element);
+        }
     }
 
     update(result: ScrapsEvaluationResponse) {
@@ -310,14 +326,14 @@ class ScrapControls {
 
 class Scrap {
     context: ScrapsContext;
-    options:ScrapOptions;
+    options: ScrapOptions;
     sandbox: CodeSandbox;
     utils: KernelUtils;
     controls: ScrapControls;
     container_element: HTMLElement | Element;
     area_control: HTMLElement;
     area_working: HTMLElement;
-    area_render: HTMLElement;
+    area_display: HTMLElement;
     area_console: HTMLElement;
     artifacts: any;
     debounce: number;
@@ -328,14 +344,15 @@ class Scrap {
         this.context = context.register(this);
         this.options = {
             autorun: false,
+            session: false,
             fixedSize: false
         };
         this.area_control = document.createElement('div');
         this.area_control.className = "controls";
         this.area_working = document.createElement('div');
         this.area_working.className = "working";
-        this.area_render = document.createElement('div');
-        this.area_render.className = "display";
+        this.area_display = document.createElement('div');
+        this.area_display.className = "display";
         this.area_console = document.createElement('div');
         this.area_console.className = "artifacts";
 
@@ -350,19 +367,22 @@ class Scrap {
 
     print(element: HTMLElement | any) {
         if (element instanceof HTMLElement) {
-            this.area_render.appendChild(element);
+            this.area_display.appendChild(element);
         } else {
             let d = document.createElement("div");
             d.innerText = element.toString();
-            this.area_render.appendChild(d);
+            this.area_display.appendChild(d);
         }
     }
 
     load(element: HTMLElement | Element) {
 
         this.container_element = element;
-        this.options.autorun = element.getAttribute("data-autorun") !== null
-        this.options.fixedSize = element.getAttribute("data-fixed") !== null
+        this.options.autorun = element.getAttribute("data-autorun") !== null;
+        this.options.session = element.getAttribute("data-session") !== null ? element.getAttribute("data-session") : false;
+        this.options.fixedSize = element.getAttribute("data-fixed") !== null;
+
+        console.log("LOAD", element, this.options);
 
         this.sandbox = new CodeSandbox(this, element.innerHTML);
         element.innerHTML = "";
@@ -372,10 +392,10 @@ class Scrap {
         this.area_working.appendChild(this.sandbox.getElement());
         this.controls.load();
 
-        element.appendChild(this.area_render);
+        (document.getElementById("area_display") || element).appendChild(this.area_display);
         element.appendChild(this.area_working);
-        element.appendChild(this.area_control);
-        element.appendChild(this.area_console);
+        (document.getElementById("area_control") || element).appendChild(this.area_control);
+        (document.getElementById("area_artifacts") || element).appendChild(this.area_console);
 
 
         this.sandbox.renderCodeHighlighting();
@@ -392,6 +412,8 @@ class Scrap {
     evaluate(flush: boolean) {
 
         let self = this;
+
+        let lh = 7;
         this.clearWarning();
 
         if (flush) {
@@ -416,7 +438,7 @@ class Scrap {
             try {
                 this.area_console.innerText = '';
                 this.area_console.className = 'artifacts';
-                this.area_render.innerHTML = "";
+                this.area_display.innerHTML = "";
 
                 this.artifacts = fn(this);
 
@@ -430,7 +452,7 @@ class Scrap {
                             this.area_console.innerHTML = this.artifacts ? "true" : "false";
                         }
                     } else if (this.artifacts instanceof HTMLElement) {
-                        this.area_render.appendChild(this.artifacts);
+                        this.area_display.appendChild(this.artifacts);
                     } else {
                         if (self.onlyIfChanges(this.area_console.innerHTML, JSON.stringify(this.artifacts))) {
                             this.area_console.innerHTML = "";
@@ -447,7 +469,7 @@ class Scrap {
                     this.area_console.innerHTML = e.name + ": " + (e.message);
                     this.area_console.className += ' warn';
                     let err_pos = this.getErrorPositionFromError(e);
-                    err_pos[0] -= 13;
+                    err_pos[0] -= lh + 2;
 
                     let error_width = 1;
                     if (e.message.indexOf("is not defined") !== -1) {
@@ -471,7 +493,7 @@ class Scrap {
                 let validation_error_position = matches[1].split(":").map((v) => {
                     return parseInt(v);
                 });
-                validation_error_position[0] -= 11;
+                validation_error_position[0] -= lh;
                 validation_error_position[1] += 1;
 
                 if (e.message.indexOf("expected token") !== -1) {
@@ -493,7 +515,7 @@ class Scrap {
                 this.area_console.innerHTML = e.name + ": " + (e.message);
                 this.area_console.className += ' error';
                 let err_pos = this.getErrorPositionFromError(e);
-                err_pos[0] -= 13;
+                err_pos[0] -= lh + 2;
                 this.setWarning(SCRAPS_EVALUATION_RESULT_TYPE.COMPILATION_ERROR, err_pos);
                 return new ScrapsEvaluationResponse(SCRAPS_EVALUATION_RESULT_TYPE.COMPILATION_ERROR, JSON.stringify(e.message));
             }
@@ -601,8 +623,38 @@ class KernelUtils {
         return el;
     }
 
+    print(el) {
+        this.scrap.print(el);
+    }
+
+    div(capture: any) {
+        let el = document.createElement('div');
+        if (capture.id) {
+            el.id = capture.id;
+        }
+        if (capture.innerHTML) {
+            el.innerHTML = capture.innerHTML;
+        }
+        if (capture.class) {
+            el.className = capture.class;
+        }
+        return el.outerHTML;
+    }
+
+    elements(capture: any, fn: any) {
+        if (capture.id && document.getElementById(capture.id)) {
+            fn(document.getElementById(capture.id));
+        }
+        if (capture.class && document.getElementsByClassName(capture.class).length) {
+            let items = document.getElementsByClassName(capture.class);
+            for (let i = 0; i < items.length; i++) {
+                fn(items[i]);
+            }
+        }
+    }
+
     getRenderArea() {
-        return this.scrap.area_render;
+        return this.scrap.area_display;
     }
 }
 

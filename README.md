@@ -1,4 +1,7 @@
-Run `scraps.html` in your browser.
+Run `scraps.html` in your browser.\
+Run `simulacra.html` in your browser.
+
+![scraps js expanded](https://github.com/OakFrame/scraps-js/blob/master/scraps-js-expanded.png?raw=true)
 
 #### Building Distributable
 `yarn package`
