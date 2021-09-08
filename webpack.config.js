@@ -1,7 +1,7 @@
 //const ClosurePlugin = require('closure-webpack-plugin');
 
 module.exports = {
-    entry: './dist/prepack.js',
+    entry: './prepack.js',
     output: {
         library:"Scraps",
         filename: 'postpack.js'

@@ -2,4 +2,7 @@
 .DS_Store
 *.js.map
 *.css.map
+.nyc*
 node_modules/
+lib/Scrap*.js
+module/

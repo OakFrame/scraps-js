@@ -8,8 +8,8 @@
   },
   "scripts": {
     "test": "nyc mocha -r ts-node/register **/*.spec.ts",
-    "package": "tsc && mkdir -p dist && cat lib/jsonview.js lib/prism.js scraps.js > dist/prepack.js && webpack && cat lib/jsonview.css lib/prism.css lib/scraps.css > dist/scraps.css",
-    "postpack": "google-closure-compiler --js=dist/postpack.js --js_output_file=dist/scraps.js && rm dist/postpack.js && rm dist/prepack.js"
+    "package": "tsc && mkdir -p dist && cat lib/jsonview.js lib/prism.js scraps.js > prepack.js && webpack && cat lib/jsonview.css lib/prism.css lib/scraps.css > dist/scraps.css",
+    "postpack": "google-closure-compiler --js=dist/postpack.js --js_output_file=dist/scraps.js && rm prepack.js && rm ./dist/postpack.js"
   },
   "repository": {
     "type": "git",
