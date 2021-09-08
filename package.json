@@ -7,7 +7,7 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "nyc mocha -r ts-node/register **/*.spec.ts",
     "package": "tsc && mkdir -p dist && cat lib/jsonview.js lib/prism.js scraps.js > dist/prepack.js && webpack && cat lib/jsonview.css lib/prism.css lib/scraps.css > dist/scraps.css",
     "postpack": "google-closure-compiler --js=dist/postpack.js --js_output_file=dist/scraps.js && rm dist/postpack.js && rm dist/prepack.js"
   },
@@ -22,12 +22,19 @@
   },
   "homepage": "https://github.com/arkamedus/scraps-js#readme",
   "dependencies": {
-    "acorn": "^8.0.4",
+    "@types/chai": "^4.2.21",
+    "@types/mocha": "^9.0.0",
+    "acorn": "^8.5.0",
+    "acorn-es7-plugin": "^1.1.7",
+    "ts-node": "^10.2.1",
+    "typescript": "^4.4.2",
     "webpack": "^5.10.0"
   },
   "devDependencies": {
     "@types/node": "^14.14.10",
+    "chai": "^4.3.4",
     "closure-webpack-plugin": "^2.3.0",
+    "mocha": "^9.1.1",
     "webpack-cli": "^4.2.0"
   }
 }
