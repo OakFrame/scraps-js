@@ -40,8 +40,12 @@ export class ScrapControls {
 
 
         evaluate_element.onclick = async () => {
+            console.log('WHAT IN THE DUCK');
+            this.update(new ScrapsEvaluationResponse(SCRAPS_EVALUATION_RESULT_TYPE.RUNNING,{}));
             const result = await this.scrap.evaluate(true);
             this.update(result);
+            console.log('WHAT IN THE LUCK',result);
+
         }
 
 
@@ -137,7 +141,6 @@ export class ScrapControls {
 
         }
 
-        console.log("setupi", this.result_type_element)
         this.result_type_element.onclick = () => {
             let c = document.getElementById("scrap-hidden-" + this.scrap.id);
             if (c) {
@@ -152,6 +155,7 @@ export class ScrapControls {
         }
 
         if (this.scrap.options.autorun) {
+            this.update(new ScrapsEvaluationResponse(SCRAPS_EVALUATION_RESULT_TYPE.RUNNING,{}));
             const result = await this.scrap.evaluate(true);
             this.update(result);
         }
@@ -183,9 +187,12 @@ export class ScrapControls {
                 this.result_type_element.className += ' success';
                 break;
 
+            case SCRAPS_EVALUATION_RESULT_TYPE.RUNNING:
+                this.result_type_element.innerHTML = '<i class="fas fa-fw fa-spin fa-cog"></i>' + zero_width_space;
+                break;
+
             case SCRAPS_EVALUATION_RESULT_TYPE.EDITING:
                 this.result_type_element.innerHTML = '<i class="fas fa-fw fa-ellipsis-h"></i>' + zero_width_space;
-
                 break;
         }
     }

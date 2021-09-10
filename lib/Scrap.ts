@@ -75,15 +75,15 @@ export class Scrap {
                 area_cached_list = document.createElement('ul');
                 this.area_cached.appendChild(area_cached_list);
             }
-            area_cached_list.innerHTML = '';
-            area_cached_list.id = 'library_cached_list';
+            area_cached_list.innerHTML = "";
+            area_cached_list.id = "library_cached_list";
 
             area_cached_add.onclick = function () {
 
                 ScrapsModal.launch(`<input type='text' placeholder="name" id="name"/><br/><div class='scraps-js'></div>`).then((d: any) => {
                     window['kernelUtils'].cached[d.alias] = d;
                     window.localStorage.setItem('scraps-js-cached-libs', JSON.stringify(window['kernelUtils'].cached));
-                    console.log('d', d);
+                    //console.log('d', d);
                     cached_area_update();
                     console.log('SCRIPT ADDED');
                 }).catch(() => {
@@ -98,13 +98,12 @@ export class Scrap {
                     window['kernelUtils'].cached = JSON.parse(saved);
                 }
 
-                area_cached_list.innerHTML = '';
+                area_cached_list.innerHTML = "";
                 let len = 0;
                 let p_edit = [];
                 for (let prop in window['kernelUtils'].cached) {
 
                     let item = window['kernelUtils'].cached[prop];
-                    console.log('item', item);
                     let li = document.createElement('li');
 
                     let b1 = document.createElement('input');
@@ -175,12 +174,12 @@ export class Scrap {
                 } else {
 
                     for (let i = 0; i < len; i++) {
-                        console.log("SHOULD EDIT", window['kernelUtils'].cached, 'library-edit-' + i, p_edit[i]);
+                       // console.log("SHOULD EDIT", window['kernelUtils'].cached, 'library-edit-' + i, p_edit[i]);
                         p_edit[i].element.onclick = () => {
                             ScrapsModal.edit(p_edit[i].item).then((d: any) => {
                                 window['kernelUtils'].cached[d.alias] = d;
                                 this.saveLocals();
-                                console.log('EDITED', d);
+                               // console.log('EDITED', d);
                                 cached_area_update();
                                 console.log('SCRIPT EDITED');
                             }).catch(() => {
@@ -197,13 +196,14 @@ export class Scrap {
         }
 
         if (area_project_add) {
-            let area_projects_list = document.getElementById('library_project_list')
+            let area_projects_list = document.getElementById("library_project_list")
             if (!area_projects_list) {
-                area_projects_list = document.createElement('ul');
+                area_projects_list = document.createElement("ul");
                 this.area_project.appendChild(area_projects_list);
             }
-            area_projects_list.innerHTML = '';
-            area_projects_list.id = 'library_project_list';
+
+            area_projects_list.innerHTML = "";
+            area_projects_list.id = "library_project_list";
 
             console.log('area project add', area_projects_list, this.area_project);
 
@@ -225,7 +225,7 @@ export class Scrap {
 
 
             let project_area_update = () => {
-                let saved = window.localStorage.getItem('scraps-js-projects-libs');
+                let saved = window.localStorage.getItem("scraps-js-projects-libs");
                 if (saved && saved.length > 1) {
                     window['kernelUtils'].projects = JSON.parse(saved);
                 }
@@ -236,11 +236,11 @@ export class Scrap {
                 for (let prop in window['kernelUtils'].projects) {
 
                     let item = window['kernelUtils'].projects[prop];
-                    console.log('item', item);
-                    let li = document.createElement('li');
+                   // console.log('item', item);
+                    let li = document.createElement("li");
                     li.className = "listable";
 
-                    let b1 = document.createElement('input');
+                    let b1 = document.createElement("input");
                     b1.className = "button-like";
                     b1.value = item.name;
                     b1.onchange = () => {
@@ -250,10 +250,10 @@ export class Scrap {
                         }
                         this.saveLocals();
                     }
-                    let b2 = document.createElement('span');
-                    b2.innerHTML = ` <span class="button-like"><strong>v</strong>${item.version || item.fn[0].version}</span> <em>as</em> `;
+                    let b2 = document.createElement("span");
+                    b2.innerHTML = ` <em>as</em> `;//<span class="button-like"><strong>v</strong>${item.version || item.fn[0].version}</span>
 
-                    let b3 = document.createElement('input');
+                    let b3 = document.createElement("input");
                     b3.className = "button-like primary";
                     b3.value = item.alias;
                     b3.style.maxWidth = "25%";
@@ -276,13 +276,13 @@ export class Scrap {
 
                     let edit = document.createElement('span');
                     edit.id = `project-edit-${len}`;
-                    edit.className = `button`;
+                    edit.className = `button button-like-small`;
                     edit.innerHTML = `<i class="far fa-fw fa-edit"></i>&ZeroWidthSpace;`;
 
 
                     let runner = document.createElement('span');
                     runner.id = `project-run-${len}`;
-                    runner.className = `button`;
+                    runner.className = `button button-like-small`;
                     runner.innerHTML = `<i class="far fa-fw fa-play-circle"></i>&ZeroWidthSpace;`;
 
                     p_edit[len] = {element: edit, item: prop, runner: runner};
@@ -301,7 +301,7 @@ export class Scrap {
                 } else {
 
                     for (let i = 0; i < len; i++) {
-                        console.log("SHOULD EDIT", window['kernelUtils'].projects, 'project-edit-' + i, p_edit[i]);
+                      //  console.log("SHOULD EDIT", window['kernelUtils'].projects, 'project-edit-' + i, p_edit[i]);
 
                         p_edit[i].runner.onclick = (event) => {
 
@@ -348,7 +348,7 @@ export class Scrap {
             }
             project_area_update();
 
-            let save_btn = document.getElementById('scraps-save');
+            let save_btn = document.getElementById("scraps-save");
             if (save_btn) {
 
                 save_btn.onclick = () => {
@@ -360,12 +360,20 @@ export class Scrap {
                         version: [vs[0], vs[1], parseInt(vs[2]) + 1].join(".")
                     }
 
-                    this.scrap_package.fn.unshift(scraphistorymeta);
-                    let sc = new ScrapCodePackage(this.scrap_package);
-                    window['kernelUtils'].projects[this.scrap_package.id] = sc;
-                    this.saveLocals()
+                    let hash_old = scraphistorymeta.fn;
+                    let hash_new = this.scrap_package.fn.length?this.scrap_package.fn[0].fn:"";
 
-                    console.log('saving scrap', v, scraphistorymeta, this.scrap_package, window['kernelUtils'].projects);
+                    if (hash_old !== hash_new){
+                        this.scrap_package.fn.unshift(scraphistorymeta);
+                        let sc = new ScrapCodePackage(this.scrap_package);
+                        window['kernelUtils'].projects[this.scrap_package.id] = sc;
+                        this.saveLocals()
+
+                        console.log("saving scrap", v, scraphistorymeta, this.scrap_package, window['kernelUtils'].projects);
+                    }else{
+                        console.log("scrap has not changed.");
+                    }
+
 
                     project_area_update();
                 }
@@ -511,8 +519,8 @@ export class Scrap {
     }
 
     saveLocals() {
-        window.localStorage.setItem('scraps-js-projects-libs', JSON.stringify(window['kernelUtils'].projects));
-        window.localStorage.setItem('scraps-js-cached-libs', JSON.stringify(window['kernelUtils'].cached));
+        window.localStorage.setItem("scraps-js-projects-libs", JSON.stringify(window['kernelUtils'].projects));
+        window.localStorage.setItem("scraps-js-cached-libs", JSON.stringify(window['kernelUtils'].cached));
     }
 
     print(element: HTMLElement | any) {
@@ -606,14 +614,14 @@ export class Scrap {
             let fn;
 
             fn = this.getSandbox().getLambda();
-            console.log('BEFORE', fn);
+          //  console.log('BEFORE', fn);
 
             try {
-                this.area_console.innerText = '';
-                this.area_console.className = 'artifacts';
+                this.area_console.innerText = "";
+                this.area_console.className = "artifacts";
                 this.area_display.innerHTML = "";
                 fn = this.getSandbox().getLambda(true);
-                console.log('AFTER', fn);
+              //  console.log("AFTER", fn);
                 this.artifacts = await fn(this);
 
                 if (this.artifacts !== undefined && JSON.stringify(this.artifacts) !== "undefined") {

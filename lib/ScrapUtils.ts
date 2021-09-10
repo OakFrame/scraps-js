@@ -24,3 +24,40 @@ export function mobileCheck() {
     })(navigator.userAgent || navigator.vendor || window['opera']);
     return check;
 }
+
+export function setCaretPosition(elem:any, caretPos) {
+
+    if(elem != null) {
+        if(elem.createTextRange) {
+            var range = elem.createTextRange();
+            range.move('character', caretPos);
+            range.select();
+        }
+        else {
+            if(elem.selectionStart) {
+                elem.focus();
+                elem.setSelectionRange(caretPos, caretPos);
+            }
+            else
+                elem.focus();
+        }
+    }
+}
+
+
+export function safeJSONify(circ) {// Demo: Circular reference
+// Note: cache should not be re-used by repeated calls to JSON.stringify.
+    var cache = [];
+    let v = JSON.stringify(circ, (key, value) => {
+        if (typeof value === 'object' && value !== null) {
+            // Duplicate reference found, discard key
+            if (cache.includes(value)) return;
+
+            // Store value in our collection
+            cache.push(value);
+        }
+        return value;
+    });
+    cache = null; // Enable garbage collection
+    return v;
+}

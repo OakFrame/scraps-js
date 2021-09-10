@@ -1,12 +1,10 @@
-import { ScrapsModal } from "./lib/ScrapsModal";
-import {ScrapControls} from "./lib/ScrapControls";
 import {Scrap} from "./lib/Scrap";
-import {ScrapsKernelUtils} from "./lib/KernelUtils";
 import {ScrapsContext} from "./lib/ScrapsContext";
+import {ScrapsKernelUtils} from "./lib/ScrapsKernelUtils";
 
 
 window.addEventListener('keydown', (event) => {
-    console.log('KEYPRESS', event);
+    //console.log('KEYPRESS', event);
     if (event.ctrlKey || event.metaKey) {
         let el;
         switch (String.fromCharCode(event.which).toLowerCase()) {
@@ -31,6 +29,10 @@ window.addEventListener('keydown', (event) => {
                 //   event.preventDefault();
                 // alert('ctrl-g');
                 break;
+           // case 'd':
+                //   event.preventDefault();
+                // alert('ctrl-g');
+             //   break;
         }
     }
 })

@@ -1,7 +1,7 @@
 import {Scrap} from "./Scrap";
 import {ScrapsEvaluationResponse} from "./ScrapsEvaluationResponse";
 import {SCRAPS_EVALUATION_RESULT_TYPE} from "./ScrapsEvaluationResultType.enum";
-import {mobileCheck} from "./ScrapUtils";
+import {mobileCheck, setCaretPosition} from "./ScrapUtils";
 
 export class CodeSandbox {
     input: string;
@@ -11,7 +11,7 @@ export class CodeSandbox {
     scrap: Scrap;
     window_scroll: (number | null);
     inner_scroll: (number | null);
-    window_lines;
+    window_lines = -1;
     intervals;
     ran_deps;
 
@@ -41,7 +41,6 @@ export class CodeSandbox {
 
         this.loadCode(code);
 
-
         this.element.className = "code-input";
         this.element.value = this.input;
         this.element.style.width = "100%";
@@ -63,22 +62,55 @@ export class CodeSandbox {
         (<HTMLElement>this.scrap.container_element.parentNode).onscroll = (ev) => {
             //    sandbox.output_code.scrollTop = sandbox.element.scrollTop;
             //    sandbox.output_code.scrollLeft = sandbox.element.scrollLeft;
-            console.log('set INNER??', (<HTMLElement>this.scrap.container_element.parentNode).scrollTop);
             this.inner_scroll = (<HTMLElement>this.scrap.container_element.parentNode).scrollTop;
         };
 
         document.body.onscroll = (ev) => {
             //    sandbox.output_code.scrollTop = sandbox.element.scrollTop;
             //    sandbox.output_code.scrollLeft = sandbox.element.scrollLeft;
-            console.log('set SCROLL??', document.body.scrollTop);
             this.window_scroll = document.body.scrollTop;
         };
 
 
         // @ts-ignore
-        this.element.onkeydown = this.element.onpaste = (event: (Event | KeyboardEvent)) => {
+        this.element.onkeydown = this.element.onpaste = (event:any) => {
 
-            console.log('ak', this.inner_scroll, this.window_scroll);
+
+            //console.log('KEYPRESS', event);
+            if (event.ctrlKey || event.metaKey) {
+                let el;
+                switch (String.fromCharCode(event.which).toLowerCase()) {
+
+                    case 'd':
+                        event.preventDefault();
+                        //alert('ctrl-s');
+                        //el = document.getElementById('scraps-save');
+                        //if (el) {
+                         //   el.click();
+                        //}
+                        let selection_start = this.element.selectionStart;
+                        var textLines = this.element.value.substr(0, selection_start).split("\n");
+                        var allLines = this.element.value.split("\n");
+                        var currentLineNumber = textLines.length;
+                        var currentColumnIndex = textLines[textLines.length-1].length;
+
+                        console.log('SHOULD DUPLICATE LINE',allLines[currentLineNumber-1],selection_start, currentLineNumber, currentColumnIndex, textLines);
+
+                        let code = this.element.value;
+                        let new_code;
+                        new_code = [allLines.slice(0,currentLineNumber).join("\n"),"\n",allLines[currentLineNumber-1],"\n",allLines.slice(currentLineNumber,allLines.length).join("\n")].join("")
+                        // textLines.join();
+
+                        this.loadCode(new_code);
+                        this.renderCodeHighlighting();
+
+                        setCaretPosition(this.element,selection_start+(allLines[currentLineNumber-1].length+1));
+
+                        return;
+                        break;
+                }
+            }
+
             //if (!this.window_scroll) {
             //     this.window_scroll = window.scrollY
             //     console.log('window scroll', this.window_scroll);
@@ -111,7 +143,7 @@ export class CodeSandbox {
 
         };
         this.element.oninput = () => {
-            console.log('bk', this.inner_scroll, this.window_scroll);
+
             this.scrap.clearWarning();
             if (this.scrap.options.session) {
                 window.localStorage.setItem('scraps-js-autosave-' + this.scrap.options.session, this.element.value);
@@ -128,15 +160,17 @@ export class CodeSandbox {
             return false;
         };
         this.element.onkeyup = () => {
-            console.log('ck', this.inner_scroll, this.window_scroll);
+            //console.log('ck', this.inner_scroll, this.window_scroll);
         };
+
+
     }
 
     fixHeight() {
         console.log('fix height', this.inner_scroll, this.window_scroll);
         let lines = this.element.value.split(/\r*\n/).length;
         if (lines !== this.window_lines/* && !this.scrap.options.fixedSize*/) {
-            console.log('NOT FIXED', document.body.scrollTop);
+          //  console.log('NOT FIXED', document.body.scrollTop);
             let pnode = (<HTMLElement>this.scrap.container_element.parentNode);
             if (!pnode.scrollTop) {
                 pnode = document.body;
@@ -145,12 +179,15 @@ export class CodeSandbox {
             }
             const p = this.inner_scroll || window.scrollY || this.window_scroll;
             this.window_lines = lines;
+            this.element.style.height = "5px";
             this.element.style.minHeight = "5px";
             //if ((this.element.scrollHeight) !== parseFloat(this.element.style.height)) {
-            this.element.style.minHeight = (this.element.scrollHeight) + "px";
-            this.output_code.style.minHeight = (this.element.scrollHeight) + "px";
+            let sh = Math.max(this.element.scrollHeight,this.scrap.container_element.scrollHeight);
+            this.element.style.minHeight = (sh) + "px";
+            this.output_code.style.minHeight = (sh) + "px";
+            this.element.style.height = "auto";
             //window.scrollTo(0, this.window_scroll);
-            console.log('CHECKING SCROLL', pnode, p, this.window_scroll);
+           // console.log('CHECKING SCROLL',sh, pnode, p, this.window_scroll);
             pnode.scrollTop = p;
             /*   window.scrollTo({
                    top: this.window_scroll,
@@ -245,15 +282,13 @@ export class CodeSandbox {
                 let item = window['kernelUtils'].projects[prop];
                 let fn = '';
                 let check = `@depends ${item.alias}`
-                if (escaped.indexOf(check) !== -1 && !this.ran_deps[prop]) {
+                if (escaped.indexOf(check) !== -1) {
                     fn = item.fn[item.using_version || 0].fn;
                     this.ran_deps[prop] = true;
                     //   console.log('RAND DEPS', `@depends ${item.alias}`, item);
                 }
                 //  escaped = escaped.replace(check, fn);
-                escaped = escaped.replace(check, `(()=>{${fn}})()`);
-
-
+                escaped = escaped.replace(check, `${fn}`);
             }
         }
 
